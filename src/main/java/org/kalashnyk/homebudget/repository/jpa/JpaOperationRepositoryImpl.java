@@ -2,7 +2,7 @@ package org.kalashnyk.homebudget.repository.jpa;
 
 import org.kalashnyk.homebudget.model.Account;
 import org.kalashnyk.homebudget.model.Operation;
-import org.kalashnyk.homebudget.model.OperationType;
+import org.kalashnyk.homebudget.model.OperationCategory.*;
 import org.kalashnyk.homebudget.repository.OperationRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
