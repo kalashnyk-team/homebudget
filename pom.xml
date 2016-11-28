@@ -29,6 +29,9 @@
         <logback.version>1.1.7</logback.version>
         <slf4j.version>1.7.21</slf4j.version>
 
+        <!--Lombok-->
+        <lombok.version>1.16.10</lombok.version>
+
     </properties>
     <build>
         <finalName>homebudget</finalName>
@@ -58,11 +61,12 @@
 
 
     <dependencies>
-<!--        <dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.35</version>
-        </dependency>-->
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Logging with SLF4J & LogBack -->
         <dependency>
@@ -91,6 +95,13 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!--Test-->

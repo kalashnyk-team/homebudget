@@ -1,5 +1,7 @@
 package org.kalashnyk.homebudget.model;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
@@ -10,6 +12,8 @@ import javax.validation.constraints.NotNull;
  */
 @Entity
 @Table(name = "categories")
+@Data
+@NoArgsConstructor
 public class OperationCategory extends NamedEntity {
 
     @NotEmpty
@@ -21,22 +25,9 @@ public class OperationCategory extends NamedEntity {
     @JoinColumn(name = "user_id")
     private User owner;
 
-    public OperationCategory() {
-    }
-
-    public OperationType getOperationType() {
-        return operationType;
-    }
-
-    public void setOperationType(OperationType type) {
-        this.operationType = type;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public enum OperationType {
+        INCOME,
+        EXPENSE,
+        TRANSFER;
     }
 }
