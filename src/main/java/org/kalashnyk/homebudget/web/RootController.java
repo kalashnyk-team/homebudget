@@ -15,30 +15,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Controller
 public class RootController {
-    @Autowired
-    private HomeBudgetService budgetService;
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+/*    @RequestMapping(value = "/", method = RequestMethod.GET)
     public String root() {
         return "index";
-    }
-
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
-    public String userList(Model model) {
-        model.addAttribute("userList", budgetService.getAllUsers());
-        return "userList";
-    }
-
-    @RequestMapping(value = "/accounts", method = RequestMethod.GET)
-    public String mealList(Model model) {
-        model.addAttribute("accountList", budgetService.getAllAccounts(AuthorizedUser.id()));
-        return "accountList";
-    }
-
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public String setUser(HttpServletRequest request) {
-        int userId = Integer.valueOf(request.getParameter("userId"));
-        AuthorizedUser.setId(userId);
-        return "redirect:accounts";
-    }
+    }*/
 }

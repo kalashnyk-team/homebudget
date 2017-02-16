@@ -1,10 +1,10 @@
 package org.kalashnyk.homebudget.model;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.validator.constraints.NotEmpty;
+import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -13,34 +13,45 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "operations")
-@Data
 @NoArgsConstructor
+@Getter
+@Setter
 public class Operation extends BaseEntity {
-    @NotEmpty
+    @OneToOne
+    @JoinColumn(name = "correspondent_id")
+    private Operation correspondingOperation;
+
+    @NotNull
     @Column(name = "date")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDateTime date;
 
-    @NotEmpty
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "category_id")
     private OperationCategory category;
 
-    @NotEmpty
+    @NotNull
     @Column(name = "amount")
     private BigDecimal amount;
 
-    @NotEmpty
-    @Column(name = "currency")
-    private Currency currency;
-
     @ManyToOne
-    @JoinColumn(name = "credit_acc_id")
-    private Account creditAccount;
-
-    @ManyToOne
-    @JoinColumn(name = "debit_acc_id")
-    private Account debitAccount;
+    @JoinColumn(name = "acc_id")
+    private Account account;
 
     @Column(name = "description")
     private String description;
+
+    @Builder
+    public Operation(Long id, Operation correspondingOperation,
+                     LocalDateTime date, OperationCategory category,
+                     BigDecimal amount, Account account, String description) {
+        super(id);
+        this.correspondingOperation = correspondingOperation;
+        this.date = date;
+        this.category = category;
+        this.amount = amount;
+        this.account = account;
+        this.description = description;
+    }
 }
