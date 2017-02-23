@@ -4,6 +4,7 @@ import org.kalashnyk.homebudget.model.User;
 import org.kalashnyk.homebudget.repository.UserRepository;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -13,6 +14,7 @@ import java.util.List;
  * Created by Sergii on 27.10.2016.
  */
 @Repository
+@Transactional
 public class JpaUserRepositoryImpl implements UserRepository {
 
     @PersistenceContext
@@ -32,7 +34,7 @@ public class JpaUserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User findById(long id) throws DataAccessException {
+    public User get(long id) throws DataAccessException {
         return em.find(User.class, id);
     }
 
@@ -44,5 +46,12 @@ public class JpaUserRepositoryImpl implements UserRepository {
         } else {
             return em.merge(user);
         }
+    }
+
+    @Override
+    public User getByEmail(String email) {
+        return em.createQuery("SELECT u FROM User u WHERE u.email=:email", User.class)
+                .setParameter("email", email)
+                .getSingleResult();
     }
 }

@@ -5,6 +5,7 @@ import org.kalashnyk.homebudget.model.User;
 import org.kalashnyk.homebudget.repository.AccountRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,6 +15,7 @@ import java.util.List;
  * Created by Sergii on 25.08.2016.
  */
 @Repository
+@Transactional
 public class JpaAccountRepositoryImpl implements AccountRepository {
     @PersistenceContext
     private EntityManager em;
@@ -51,8 +53,9 @@ public class JpaAccountRepositoryImpl implements AccountRepository {
 
     @Override
     public List<Account> getAll(long userId) {
-        return em.createQuery("SELECT a FROM Account a WHERE a.owner.id=:userId", Account.class)
+        return em.createQuery("SELECT a FROM Account a WHERE a.owner.id=:userId AND a.type IN :types", Account.class)
                 .setParameter("userId", userId)
+                .setParameter("types", Account.types())
                 .getResultList();
     }
 }

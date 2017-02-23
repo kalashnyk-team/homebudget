@@ -2,10 +2,10 @@ package org.kalashnyk.homebudget.repository.jpa;
 
 import org.kalashnyk.homebudget.model.Account;
 import org.kalashnyk.homebudget.model.Operation;
-import org.kalashnyk.homebudget.model.OperationCategory.*;
 import org.kalashnyk.homebudget.repository.OperationRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -16,6 +16,7 @@ import java.util.List;
  * Created by Sergii on 26.08.2016.
  */
 @Repository
+@Transactional
 public class JpaOperationRepositoryImpl implements OperationRepository {
 
     @PersistenceContext
@@ -23,7 +24,7 @@ public class JpaOperationRepositoryImpl implements OperationRepository {
 
     @Override
     public Operation findById(long id, long userId) {
-        List<Operation> operations = em.createQuery("SELECT o FROM Operation o WHERE o.id=:id AND (o.debitAccount.owner.id=:userId OR o.creditAccount.owner.id=:userId)", Operation.class)
+        List<Operation> operations = em.createQuery("SELECT o FROM Operation o WHERE o.id=:id AND o.account.owner.id=:userId", Operation.class)
                 .setParameter("id", id)
                 .setParameter("userId", userId)
                 .getResultList();
@@ -31,19 +32,11 @@ public class JpaOperationRepositoryImpl implements OperationRepository {
     }
 
     @Override
-    public Operation save(Operation operation, long userId, long debitAccountId, long creditAccountId) {
+    public Operation save(Operation operation, long userId, long accountId) {
         if (!operation.isNew() && findById(operation.getId(), userId) == null) {
             return null;
         }
-
-        if (operation.getCategory().getOperationType() == OperationType.EXPENSE) {
-            operation.setCreditAccount(em.getReference(Account.class, creditAccountId));
-        } else if (operation.getCategory().getOperationType() == OperationType.INCOME) {
-            operation.setDebitAccount(em.getReference(Account.class, debitAccountId));
-        } else if (operation.getCategory().getOperationType() == OperationType.TRANSFER) {
-            operation.setCreditAccount(em.getReference(Account.class, creditAccountId));
-            operation.setDebitAccount(em.getReference(Account.class, debitAccountId));
-        }
+        operation.setAccount(em.getReference(Account.class, accountId));
 
         if (operation.isNew()) {
             em.persist(operation);
@@ -55,7 +48,7 @@ public class JpaOperationRepositoryImpl implements OperationRepository {
 
     @Override
     public boolean delete(long id, long userId) {
-        return em.createQuery("DELETE FROM Operation o WHERE o.id=:id AND (o.debitAccount.owner.id=:userId OR o.creditAccount.owner.id=:userId)")
+        return em.createQuery("DELETE FROM Operation o WHERE o.id=:id AND o.account.owner.id=:userId")
                 .setParameter("id", id)
                 .setParameter("userId", userId)
                 .executeUpdate() != 0;
@@ -63,7 +56,7 @@ public class JpaOperationRepositoryImpl implements OperationRepository {
 
     @Override
     public List<Operation> getAll(long userId) {
-        return em.createQuery("SELECT o FROM Operation o WHERE o.debitAccount.owner.id=:userId OR o.creditAccount.owner.id=:userId", Operation.class)
+        return em.createQuery("SELECT o FROM Operation o WHERE o.account.owner.id=:userId", Operation.class)
                 .setParameter("userId", userId)
                 .getResultList();
     }
@@ -71,10 +64,8 @@ public class JpaOperationRepositoryImpl implements OperationRepository {
 
     @Override
     public List<Operation> getAllForAccount(long userId, long accountId) {
-        return em.createQuery(
-                "SELECT o FROM Operation o " +
-                        "WHERE (o.debitAccount.owner.id=:userId OR o.creditAccount.owner.id=:userId) " +
-                        "AND (o.debitAccount.id=:accountId OR o.creditAccount.id=:accountId)", Operation.class)
+        return em.createQuery("SELECT o FROM Operation o JOIN FETCH o.account " +
+                "WHERE o.account.owner.id=:userId AND o.account.id=:accountId", Operation.class)
                 .setParameter("userId", userId)
                 .setParameter("accountId", accountId)
                 .getResultList();
@@ -84,7 +75,7 @@ public class JpaOperationRepositoryImpl implements OperationRepository {
     public List<Operation> getBetween(long userId, LocalDateTime start, LocalDateTime end) {
         return em.createQuery(
                 "SELECT o FROM Operation o " +
-                        "WHERE (o.debitAccount.owner.id=:userId OR o.creditAccount.owner.id=:userId)" +
+                        "WHERE o.account.owner.id=:userId " +
                         "AND o.date BETWEEN :start AND :end", Operation.class)
                 .setParameter("userId", userId)
                 .setParameter("start", start)

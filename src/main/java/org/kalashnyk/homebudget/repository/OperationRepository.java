@@ -12,7 +12,7 @@ public interface OperationRepository {
 
     Operation findById(long id, long userId);
 
-    Operation save(Operation operation, long userId, long debitAccountId, long creditAccountId);
+    Operation save(Operation operation, long userId, long accountId);
 
     boolean delete(long id, long userId);
 

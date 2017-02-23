@@ -1,5 +1,6 @@
 package org.kalashnyk.homebudget.model;
 
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -14,8 +15,12 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
+
+    BaseEntity(Long id) {
+        this.id = id;
+    }
 
     public boolean isNew() {
         return id == null;

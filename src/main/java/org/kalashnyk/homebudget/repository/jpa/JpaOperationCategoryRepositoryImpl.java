@@ -5,15 +5,18 @@ import org.kalashnyk.homebudget.model.User;
 import org.kalashnyk.homebudget.repository.OperationCategoryRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Created by Sergii on 25.08.2016.
  */
 @Repository
+@Transactional
 public class JpaOperationCategoryRepositoryImpl implements OperationCategoryRepository {
 
     @PersistenceContext

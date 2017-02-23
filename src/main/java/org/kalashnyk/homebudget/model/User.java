@@ -4,6 +4,8 @@ import lombok.*;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -18,11 +20,21 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@Data
-@ToString(exclude = "password")
-public class User extends NamedEntity{
+@ToString(exclude = {"password", "roles", "accounts", "categories"})
+@NoArgsConstructor
+@Getter
+@Setter
+public class User extends NamedEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     public static final String DELETE = "User.delete";
     public static final String GET_ALL = "User.getAll";
+
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "basic_currency_id")
+    private Currency basicCurrency;
 
     @NotEmpty
     @Column(name = "email")
@@ -40,12 +52,32 @@ public class User extends NamedEntity{
     @Column(name = "confirmed")
     private boolean confirmed;
 
-    @OneToMany(mappedBy = "owner")
+    @NotEmpty
+    @Column(name = "enabled")
+    private boolean enabled;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
     private List<Account> accounts;
 
-    @ElementCollection(targetClass = Role.class)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    private List<OperationCategory> categories;
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     private Set<Role> roles;
+
+    @Builder
+    private User(Long id, String name, Currency basicCurrency,
+                 String email, String password, Date registered,
+                 boolean confirmed, boolean enabled) {
+        super(id, name);
+        this.basicCurrency = basicCurrency;
+        this.email = email;
+        this.password = password;
+        this.registered = registered;
+        this.confirmed = confirmed;
+        this.enabled = enabled;
+    }
 }

@@ -1,9 +1,6 @@
 package org.kalashnyk.homebudget.service;
 
-import org.kalashnyk.homebudget.model.Account;
-import org.kalashnyk.homebudget.model.Operation;
-import org.kalashnyk.homebudget.model.OperationCategory;
-import org.kalashnyk.homebudget.model.User;
+import org.kalashnyk.homebudget.model.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,7 +9,11 @@ import java.util.List;
  * Created by Sergii on 02.09.2016.
  */
 public interface HomeBudgetService {
-    User getUser(long userId);
+    Currency getCurrency(int id);
+
+    Currency getCurrency(String stringId);
+
+    List<Currency> getAllCurrencies();
 
     Account getAccount(long accountId, long userId);
 
@@ -20,26 +21,19 @@ public interface HomeBudgetService {
 
     OperationCategory getOperationCategory(long operationCategoryId, long userId);
 
-    User saveUser(User user);
-
     Account saveAccount(Account account, long userId);
 
     OperationCategory saveOperationCategory(OperationCategory operationCategory, long userId);
 
     Operation saveOperation(Operation operation,
-                       long userId,
-                       long debitAccountId,
-                       long creditAccountId);
-
-    void deleteUser(long id);
+                            long userId,
+                            long accountId);
 
     void deleteAccount(long accountId, long userId);
 
     void deleteOperation(long operationId, long userId);
 
     void deleteOperationCategory(long operationCategoryId, long userId);
-
-    List<User> getAllUsers();
 
     List<Account> getAllAccounts(long userId);
 
