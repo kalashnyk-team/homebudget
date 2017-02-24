@@ -9,8 +9,8 @@
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
-    <h3>Новый доход/расход</h3>
-    <form class="form-horizontal" method="POST" action="new">
+    <h3>Новый перевод</h3>
+    <form class="form-horizontal" method="POST">
         <div class="form-group"><input name="id" type="hidden" value="${operation.id}"></div>
         <div class="form-group">
             <label class="control-label col-md-7 col-lg-3" for="date">Дата</label>
@@ -20,35 +20,27 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-lg-3 col-md-7" for="account">Счет</label>
+            <label class="control-label col-lg-3 col-md-7" for="toAccount">Перевод со счета:</label>
             <div class="col-lg-2 col-md-5">
-                <select class="form-control" id="account" name="accId">
+                <select class="form-control" id="fromAccount" name="fromAccountId">
                     <option disabled>Выберите счет</option>
-                    <c:forEach items="${accounts}" var="account">
-                        <jsp:useBean id="account" scope="page"
+                    <c:forEach items="${accounts}" var="fromAccount">
+                        <jsp:useBean id="fromAccount" scope="page"
                                      type="org.kalashnyk.homebudget.model.Account"/>
-                        <option value="${account.id}">${account.name} (<span class="<c:if test="${account.amount<0}">negative-amount</c:if>">${account.amount} ${account.currency}</span>)</option>
+                        <option value="${fromAccount.id}">${fromAccount.name} (${fromAccount.amount} ${fromAccount.currency})</option>
                     </c:forEach>
                 </select>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-md-7 col-lg-3" for="category">Категория</label>
-            <div class="col-md-5 col-lg-2">
-                <select class="form-control" id="category" name="categoryId">
-                    <option disabled>Выберите категорию</option>
-                    <c:forEach items="${categories}" var="category">
-                        <jsp:useBean id="category" scope="page"
-                                     type="org.kalashnyk.homebudget.model.OperationCategory"/>
-                        <option
-                                value="${category.id}"
-                                class="
-<c:choose>
-<c:when test="${category.operationType.name() == 'INCOME'}">income-category</c:when>
-<c:otherwise>expense-category</c:otherwise>
-</c:choose>"
-                        >${category.toString()}
-                        </option>
+            <label class="control-label col-lg-3 col-md-7" for="toAccount">Перевод на счет:</label>
+            <div class="col-lg-2 col-md-5">
+                <select class="form-control" id="toAccount" name="toAccountId">
+                    <option disabled>Выберите счет</option>
+                    <c:forEach items="${accounts}" var="toAccount">
+                        <jsp:useBean id="toAccount" scope="page"
+                                     type="org.kalashnyk.homebudget.model.Account"/>
+                        <option value="${toAccount.id}">${toAccount.name} (${toAccount.amount} ${toAccount.currency})</option>
                     </c:forEach>
                 </select>
             </div>

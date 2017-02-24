@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Created by Sergii on 08.02.2017.
@@ -38,12 +38,62 @@ public class OperationController {
         return "operation";
     }
 
+    @RequestMapping(value = "/transfer", method = RequestMethod.GET)
+    public String getTransferForm(Model model) {
+        long userId = AuthorizedUser.id();
+        model.addAttribute("accounts", budgetService.getAllAccounts(userId));
+        return "transfer";
+    }
+
+    @RequestMapping(value = "/transfer", method = RequestMethod.POST)
+    public String createTransfer(@RequestParam Long fromAccountId,
+                                 @RequestParam Long toAccountId,
+                                 @RequestParam BigDecimal amount,
+                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                 @RequestParam(required = false) String comment) {
+        long userId = AuthorizedUser.id();
+        Account fromAccount = budgetService.getAccount(fromAccountId, userId);
+        Account toAccount = budgetService.getAccount(toAccountId, userId);
+
+        Operation inTransfer = Operation.builder()
+                .account(toAccount)
+                .category(budgetService.getServiceCategory(OperationCategory.IN_TRANSFER))
+                .amount(amount)
+                .date(date.atStartOfDay())
+                .remainOnAccount(new BigDecimal(0.0))
+                .comment(comment)
+                .build();
+
+        Operation outTransfer = Operation.builder()
+                .account(fromAccount)
+                .category(budgetService.getServiceCategory(OperationCategory.OUT_TRANSFER))
+                .amount(amount)
+                .date(date.atStartOfDay())
+                .remainOnAccount(new BigDecimal(0.0))
+                .comment(comment)
+                .build();
+
+        budgetService.saveTransfer(outTransfer, inTransfer, userId, fromAccountId, toAccountId);
+
+        return "redirect:/accounts";
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String getOperationList(@RequestParam(required = false) Long accountId,
+                                   Model model) {
+        if (accountId != null) {
+            model.addAttribute("account", budgetService.getAccount(accountId, AuthorizedUser.id()));
+            model.addAttribute("groupedOperations", budgetService.getOperationsForAccountGroupByDate(AuthorizedUser.id(), accountId));
+        }
+        return "operations";
+    }
+
     @RequestMapping(value = "/new", method = RequestMethod.POST)
     public String createOperation(@RequestParam Long accId,
                                   @RequestParam Long categoryId,
                                   @RequestParam BigDecimal amount,
-                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date,
-                                  Model model) {
+                                  @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                  @RequestParam(required = false) String comment) {
         long userId = AuthorizedUser.id();
         Account account = budgetService.getAccount(accId, userId);
         OperationCategory category = budgetService.getOperationCategory(categoryId, userId);
@@ -52,7 +102,9 @@ public class OperationController {
                 .account(account)
                 .category(category)
                 .amount(amount)
-                .date(date)
+                .date(date.atStartOfDay())
+                .remainOnAccount(new BigDecimal(0.0))
+                .comment(comment)
                 .build();
 
         budgetService.saveOperation(operation, userId, accId);

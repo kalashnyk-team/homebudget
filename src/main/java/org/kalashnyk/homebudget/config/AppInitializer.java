@@ -1,8 +1,6 @@
 package org.kalashnyk.homebudget.config;
 
-import org.kalashnyk.homebudget.service.UserService;
-import org.kalashnyk.homebudget.service.UserServiceImpl;
-import org.springframework.security.core.userdetails.UserDetailsService;
+
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -11,7 +9,7 @@ import javax.servlet.*;
 /**
  * Created by Sergii on 11.02.2017.
  */
-public class AppInit extends AbstractAnnotationConfigDispatcherServletInitializer {
+public class AppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
     // Этот метод должен содержать конфигурации которые инициализируют Beans
     // для инициализации бинов у нас использовалась аннотация @Bean
     @Override
@@ -46,16 +44,4 @@ public class AppInit extends AbstractAnnotationConfigDispatcherServletInitialize
 
         return new Filter[] { characterEncodingFilter};
     }
-
-/*    @Override
-    public void onStartup(ServletContext servletContext) throws ServletException {
-
-        FilterRegistration.Dynamic fr = servletContext.addFilter("encodingFilter",
-                new CharacterEncodingFilter());
-        fr.setInitParameter("encoding", "UTF-8");
-        fr.setInitParameter("forceEncoding", "true");
-        fr.addMappingForUrlPatterns(null, true, "*//*");
-
-    }*/
-
 }

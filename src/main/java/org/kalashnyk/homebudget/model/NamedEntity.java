@@ -2,6 +2,7 @@ package org.kalashnyk.homebudget.model;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -14,6 +15,7 @@ import javax.persistence.MappedSuperclass;
 @MappedSuperclass
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class NamedEntity extends BaseEntity {
     @NotEmpty
     @Column(name = "name")

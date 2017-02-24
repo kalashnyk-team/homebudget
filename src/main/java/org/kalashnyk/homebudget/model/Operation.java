@@ -16,7 +16,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Operation extends BaseEntity {
+@ToString(callSuper = true, exclude = {"correspondingOperation"})
+@EqualsAndHashCode(callSuper = true, exclude = {"correspondingOperation"})
+public class Operation extends BaseEntity implements Comparable<Operation> {
     @OneToOne
     @JoinColumn(name = "correspondent_id")
     private Operation correspondingOperation;
@@ -26,7 +28,6 @@ public class Operation extends BaseEntity {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDateTime date;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "category_id")
     private OperationCategory category;
@@ -35,23 +36,52 @@ public class Operation extends BaseEntity {
     @Column(name = "amount")
     private BigDecimal amount;
 
+    @NotNull
+    @Column(name = "amount_after")
+    private BigDecimal remainOnAccount;
+
     @ManyToOne
     @JoinColumn(name = "acc_id")
     private Account account;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "comment")
+    private String comment;
 
     @Builder
     public Operation(Long id, Operation correspondingOperation,
                      LocalDateTime date, OperationCategory category,
-                     BigDecimal amount, Account account, String description) {
+                     BigDecimal amount, Account account, String comment,
+                     BigDecimal remainOnAccount) {
         super(id);
         this.correspondingOperation = correspondingOperation;
         this.date = date;
         this.category = category;
         this.amount = amount;
         this.account = account;
-        this.description = description;
+        this.comment = comment;
+        this.remainOnAccount = remainOnAccount;
+    }
+
+    @Override
+    public int compareTo(Operation anotherOperation) {
+        if (this.date.compareTo(anotherOperation.date) == 0) {
+            return this.id.compareTo(anotherOperation.id);
+        } else {
+            return this.date.compareTo(anotherOperation.date);
+        }
+    }
+
+    public boolean isExpense() {
+        return category.isExpense();
+    }
+
+    public String description() {
+        switch (category.getOperationType()) {
+            case IN_TRANSFER:
+            case OUT_TRANSFER:
+                return category.getName() + " '" + this.correspondingOperation.account.name + "'";
+            default:
+                return category.getName();
+        }
     }
 }

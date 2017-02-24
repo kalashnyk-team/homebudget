@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Created by Sergii on 02.02.2017.
@@ -35,5 +36,39 @@ public class CategoryController {
         model.addAttribute("category", new OperationCategory());
         model.addAttribute("categories", budgetService.getAllOperationCategories(AuthorizedUser.id()));
         return "category";
+    }
+
+    @RequestMapping(value = "/new", method = RequestMethod.POST)
+    public String saveCategory(@RequestParam String type,
+                               @RequestParam(required = false) Long parentId,
+                               @RequestParam String name) {
+        OperationCategory parent = parentId == null ? null : budgetService.getOperationCategory(parentId, AuthorizedUser.id());
+        OperationCategory.OperationType operationType = null;
+        int level = 1;
+
+        if (parent != null) {
+            operationType = parent.getOperationType();
+            level = parent.getLevel() + 1;
+        } else {
+            switch (type) {
+                case "income":
+                    operationType = OperationCategory.OperationType.INCOME;
+                    break;
+                case "expense":
+                    operationType = OperationCategory.OperationType.EXPENSE;
+                    break;
+            }
+        }
+
+        OperationCategory category = OperationCategory.builder()
+                .name(name)
+                .level(level)
+                .parent(parent)
+                .operationType(operationType)
+                .build();
+
+        budgetService.saveOperationCategory(category, AuthorizedUser.id());
+
+        return "redirect:/categories";
     }
 }

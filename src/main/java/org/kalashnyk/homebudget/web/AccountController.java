@@ -37,7 +37,7 @@ public class AccountController {
     public String showAccountList(Model model) {
         model.addAttribute("currencies", budgetService.getAllCurrencies());
         model.addAttribute("accountTypes", Account.types());
-        model.addAttribute("accounts", budgetService.getAllAccounts(AuthorizedUser.id()));
+        model.addAttribute("groupedAccounts", budgetService.getAccountsGroupByType(AuthorizedUser.id()));
         return "accounts";
     }
 
@@ -50,7 +50,7 @@ public class AccountController {
         return "account";
     }
 
-    @RequestMapping(value = "/save", method = RequestMethod.POST)
+    @RequestMapping(value = "/new", method = RequestMethod.POST)
     public String saveAccount(@RequestParam(required = false) Long id,
                               @RequestParam String name,
                               @RequestParam String currencyCode,
@@ -76,15 +76,5 @@ public class AccountController {
 
         budgetService.saveAccount(account, AuthorizedUser.id());
         return "redirect:/accounts/";
-    }
-
-    @RequestMapping(value = "/{accountId}/operations", method = RequestMethod.GET)
-    public String operationList(@PathVariable Long accountId,
-                                @RequestParam(required = false) String period,
-                                Model model) {
-        Account account = budgetService.getAccount(accountId, AuthorizedUser.id());
-        model.addAttribute("account", account);
-        model.addAttribute("operations", budgetService.getAllOperationsForAccount(AuthorizedUser.id(), account.getId()));
-        return "operations";
     }
 }

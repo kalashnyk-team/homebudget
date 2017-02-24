@@ -1,6 +1,7 @@
 package org.kalashnyk.homebudget.config;
 
 
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -8,8 +9,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -32,6 +31,7 @@ public class PersistenceConfig {
     private @Value("${database.username}") String username;
     private @Value("${database.password}") String password;
     private @Value("${jpa.showSql}") boolean showSql;
+    private final String domainPackage = "org.kalashnyk.**.model";
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer myPropertySourcesPlaceholderConfigurer() {
@@ -45,34 +45,39 @@ public class PersistenceConfig {
 
     @Bean(name = "dataSource")
     public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        BasicDataSource dataSource = new BasicDataSource();
+/*        DriverManagerDataSource dataSource = new DriverManagerDataSource();*/
         dataSource.setDriverClassName(driverClassName);
         dataSource.setUrl(url);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
+        dataSource.setInitialSize(5);
+        dataSource.setMaxIdle(10);
+        dataSource.setMaxTotal(10);
+        /*dataSource.setConnectionInitSqls(Arrays.asList("classpath:db/initDBpostgres.sql", "classpath:db/populateDB.sql"))*/;
 
         return dataSource;
     }
 
 
     @Bean(name = "entityManagerFactory")
-    public EntityManagerFactory entityManagerFactory() {
+    public EntityManagerFactory entityManagerFactory(DataSource dataSource, JpaVendorAdapter jpaVendorAdapter) {
         LocalContainerEntityManagerFactoryBean entityManagerFactoryBean = new LocalContainerEntityManagerFactoryBean();
-        entityManagerFactoryBean.setDataSource(dataSource());
-        entityManagerFactoryBean.setJpaVendorAdapter(jpaVendorAdapter());
+        entityManagerFactoryBean.setDataSource(dataSource);
+        entityManagerFactoryBean.setJpaVendorAdapter(jpaVendorAdapter);
 
         Map<String, Object> jpaPropertyMap = entityManagerFactoryBean.getJpaPropertyMap();
         jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL}", Boolean.parseBoolean("${hibernate.format_sql}"));
         jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).USE_SQL_COMMENTS}", Boolean.parseBoolean("${hibernate.use_sql_comments}"));
 
-        entityManagerFactoryBean.setPackagesToScan("org.kalashnyk.**.model");
+        entityManagerFactoryBean.setPackagesToScan(domainPackage);
         entityManagerFactoryBean.afterPropertiesSet();
 
 
         return entityManagerFactoryBean.getObject();
     }
 
-    @Bean
+    @Bean(name = "jpaVendorAdapter")
     public JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
         jpaVendorAdapter.setShowSql(showSql);
@@ -81,7 +86,7 @@ public class PersistenceConfig {
     }
 
     @Bean(name = "transactionManager")
-    public JpaTransactionManager transactionManager() {
-        return new JpaTransactionManager(entityManagerFactory());
+    public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
 }

@@ -6,30 +6,27 @@
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
     <h3>Операции по счету ${account.name}</h3>
-    <hr>
-    <a href="operations/create">Ввести затраты/доходы</a>
-    <hr>
-        <table class="table table-striped">
-            <thead>
-            <tr>
-                <th>Дата</th>
-                <th>Категория</th>
-                <th>Сумма</th>
-                <th></th>
-                <th></th>
-            </tr>
-            </thead>
-            <c:forEach items="${operations}" var="operation">
-                <tr>
-                    <jsp:useBean id="operation" scope="page" type="org.kalashnyk.homebudget.model.Operation"/>
-                    <td>${operation.getDate()}</td>
-                    <td>${operation.category.name}</td>
-                    <td>${account.currency}${operation.amount}</td>
-                    <td><a href="operations/update?id=${operation.id}">Change</a></td>
-                    <td><a href="operations/delete?id=${operation.id}">Delete</a></td>
-                </tr>
+    <div class="container-fluid">
+        <c:forEach items="${groupedOperations}" var="group">
+            <div class="row">
+                <hr>
+                <div class="col-md-12 col-lg-10">
+                        <b>${group.key}</b>
+                </div>
+            </div>
+            <c:forEach items="${group.value}" var="operation">
+                <span>*&nbsp;*&nbsp;*&nbsp;*&nbsp;*&nbsp;*&nbsp;*&nbsp;*  &nbsp;*&nbsp;*</span>
+                <div class="row" title="${operation.comment}">
+                    <div class="col-md-5 col-lg-3">
+                            ${operation.description()}: <span class="<c:if test="${operation.isExpense()}">expense</c:if>">${operation.amount}</span>
+                    </div>
+                    <div class="col-md-5 col-lg-2">
+                        Остаток: <span class="<c:if test="${operation.remainOnAccount<0}">negative-amount</c:if>">${operation.remainOnAccount}</span>
+                    </div>
+                </div>
             </c:forEach>
-        </table>
+        </c:forEach>
+    </div>
 </section>
 </body>
 </html>
