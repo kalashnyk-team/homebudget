@@ -1,15 +1,18 @@
 package org.kalashnyk.homebudget.service;
 
 import org.kalashnyk.homebudget.model.*;
+import org.kalashnyk.homebudget.model.Currency;
 import org.kalashnyk.homebudget.repository.*;
 import org.kalashnyk.homebudget.util.exception.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -18,23 +21,19 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class HomeBudgetServiceImpl implements HomeBudgetService {
-
-    private UserRepository userRepository;
     private AccountRepository accountRepository;
     private OperationRepository operationRepository;
-    private OperationCategoryRepository operationCategoryRepository;
+    private OperationCategoryRepository categoryRepository;
     private CurrencyRepository currencyRepository;
 
     @Autowired
-    public HomeBudgetServiceImpl(UserRepository userRepository,
-                                 AccountRepository accountRepository,
+    public HomeBudgetServiceImpl(AccountRepository accountRepository,
                                  OperationRepository operationRepository,
-                                 OperationCategoryRepository operationCategoryRepository,
+                                 OperationCategoryRepository categoryRepository,
                                  CurrencyRepository currencyRepository) {
-        this.userRepository = userRepository;
         this.accountRepository = accountRepository;
         this.operationRepository = operationRepository;
-        this.operationCategoryRepository = operationCategoryRepository;
+        this.categoryRepository = categoryRepository;
         this.currencyRepository = currencyRepository;
     }
 
@@ -66,87 +65,60 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
     @Override
     public OperationCategory getOperationCategory(long operationCategoryId, long userId) {
         return ExceptionUtil.checkNotFoundWithId(
-                operationCategoryRepository.findById(operationCategoryId, userId),
+                categoryRepository.findById(operationCategoryId, userId),
                 operationCategoryId);
     }
 
-    /*@Override
-    public User saveUser(User user) {
-        User savedUser = userRepository.save(user);
-        Account expenseAccount =
-                Account.builder()
-                        .name("EXPENSE_ACCOUNT")
-                        .currency(savedUser.getBasicCurrency())
-                        .owner(savedUser)
-                        .amount(new BigDecimal("0.0"))
-                        .type(Account.Type.EXPENSE)
-                        .build();
-
-        Account incomeAccount =
-                Account.builder()
-                        .name("INCOME_ACCOUNT")
-                        .currency(savedUser.getBasicCurrency())
-                        .owner(savedUser)
-                        .amount(new BigDecimal("0.0"))
-                        .type(Account.Type.INCOME)
-                        .build();
-
-        operationCategoryRepository.save(
-                OperationCategory.builder()
-                .name("IN_TRANSFER")
-                .operationType(OperationCategory.OperationType.IN_TRANSFER)
-                .owner(savedUser)
-                .parent(null)
-                .build(), savedUser.getId());
-
-        operationCategoryRepository.save(
-                OperationCategory.builder()
-                        .name("OUT_TRANSFER")
-                        .operationType(OperationCategory.OperationType.OUT_TRANSFER)
-                        .owner(savedUser)
-                        .parent(null)
-                        .build(), savedUser.getId());
-
-        accountRepository.save(expenseAccount, savedUser.getId());
-        accountRepository.save(incomeAccount, savedUser.getId());
-
-        return savedUser;
-    }*/
-
     @Override
     public Account saveAccount(Account account, long userId) {
-        return accountRepository.save(account, userId);
+        Account savedAccount = accountRepository.save(account, userId);
+
+
+        operationRepository.save(Operation.builder()
+                .account(savedAccount)
+                .amount(savedAccount.getAmount())
+                .date(LocalDate.now().atStartOfDay())
+                .category(categoryRepository.getServiceCategory(OperationCategory.OPENING))
+                .remainOnAccount(savedAccount.getAmount())
+                .build(), userId, savedAccount.getId());
+
+        return savedAccount;
     }
 
     @Override
     public OperationCategory saveOperationCategory(OperationCategory operationCategory, long userId) {
-        return operationCategoryRepository.save(operationCategory, userId);
+        return categoryRepository.save(operationCategory, userId);
     }
 
     @Override
     @Transactional
     public Operation saveOperation(Operation operation, long userId, long accountId) {
-        Account account = accountRepository.findById(accountId, userId);
-        BigDecimal diff;
+        correctRemainOnAccountAfterOperation(operation, userId, accountId);
+        operationRepository.save(operation, userId, accountId);
 
-        if (operation.isNew()) {
-            diff = operation.getAmount();
-        } else {
-            diff = operationRepository.findById(operation.getId(), userId).getAmount().subtract(operation.getAmount());
-        }
+        correctAllOperationsAfterThis(getLastOperationBeforeThis(operation), userId, accountId);
 
-        switch (operation.getCategory().getOperationType()) {
-            case EXPENSE:
-                account.setAmount(account.getAmount().subtract(diff));
-                break;
-            case INCOME:
-                account.setAmount(account.getAmount().add(diff));
-                break;
-        }
+        return operation;
+    }
 
-        accountRepository.save(account, userId);
+    @Override
+    @Transactional
+    public void saveTransfer(Operation outTransfer, Operation inTransfer, long userId, long fromAccountId, long toAccountId) {
+        correctRemainOnAccountAfterOperation(outTransfer, userId, fromAccountId);
+        correctRemainOnAccountAfterOperation(inTransfer, userId, toAccountId);
 
-        return operationRepository.save(operation, userId, accountId);
+        operationRepository.save(outTransfer, userId, fromAccountId);
+        operationRepository.save(inTransfer, userId, toAccountId);
+
+        outTransfer.setCorrespondingOperation(inTransfer);
+        inTransfer.setCorrespondingOperation(outTransfer);
+
+        operationRepository.save(outTransfer, userId, fromAccountId);
+        operationRepository.save(inTransfer, userId, toAccountId);
+
+
+        correctAllOperationsAfterThis(getLastOperationBeforeThis(inTransfer), userId, toAccountId);
+        correctAllOperationsAfterThis(getLastOperationBeforeThis(outTransfer), userId, fromAccountId);
     }
 
     @Override
@@ -161,12 +133,14 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
 
     @Override
     public void deleteOperationCategory(long operationCategoryId, long userId) {
-        ExceptionUtil.checkNotFoundWithId(operationCategoryRepository.delete(operationCategoryId, userId), operationCategoryId);
+        ExceptionUtil.checkNotFoundWithId(categoryRepository.delete(operationCategoryId, userId), operationCategoryId);
     }
 
     @Override
     public List<Account> getAllAccounts(long userId) {
-        return accountRepository.getAll(userId);
+        List<Account> sortedAccounts = accountRepository.getAll(userId);
+        sortedAccounts.sort(null);
+        return sortedAccounts;
     }
 
     @Override
@@ -181,7 +155,7 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
 
     @Override
     public List<OperationCategory> getAllOperationCategories(long userId) {
-        return operationCategoryRepository.getAll(userId).stream()
+        return categoryRepository.getAll(userId).stream()
                 .filter(category -> category.getOperationType() != OperationCategory.OperationType.IN_TRANSFER)
                 .filter(category -> category.getOperationType() != OperationCategory.OperationType.OUT_TRANSFER)
                 .sorted((o1, o2) -> {
@@ -197,5 +171,84 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
     @Override
     public List<Operation> getOperationsBetween(long userId, LocalDateTime start, LocalDateTime end) {
         return operationRepository.getBetween(userId, start, end);
+    }
+
+    @Override
+    public Map<Account.Type, Set<Account>> getAccountsGroupByType(long userId) {
+        Map<Account.Type, Set<Account>> groupedAccounts = new TreeMap<>();
+        List<Account> accounts = accountRepository.getAll(userId);
+
+        for (Account a : accounts) {
+            Account.Type type = a.getType();
+            if (groupedAccounts.containsKey(type)) {
+                groupedAccounts.get(type).add(a);
+            } else {
+                groupedAccounts.put(type, new TreeSet<>(Arrays.asList(a)));
+            }
+        }
+
+        return groupedAccounts;
+    }
+
+    @Override
+    public Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId) {
+        Map<LocalDate, Set<Operation>> grouppedOperations = new TreeMap<>();
+        List<Operation> operations = operationRepository.getAllForAccount(userId, accountId);
+
+        System.out.println(Arrays.toString(operations.toArray()));
+
+        for (Operation o : operations) {
+            LocalDate date = o.getDate().toLocalDate();
+            System.out.println(o);
+            if (grouppedOperations.containsKey(date)) {
+                grouppedOperations.get(date).add(o);
+            } else {
+                grouppedOperations.put(date, new TreeSet<>(Arrays.asList(o)));
+            }
+        }
+        return grouppedOperations;
+    }
+
+    @Override
+    public OperationCategory getServiceCategory(String serviceCategory) {
+        return categoryRepository.getServiceCategory(serviceCategory);
+    }
+
+    private void correctAllOperationsAfterThis(Operation before, long userId, long accountId) {
+        Operation previous = before;
+        for (Operation o : operationRepository.getAllOperationAfter(accountId, before)) {
+            if (o.isExpense()) {
+                o.setRemainOnAccount(previous.getRemainOnAccount().subtract(o.getAmount()));
+            } else {
+                o.setRemainOnAccount(previous.getRemainOnAccount().add(o.getAmount()));
+            }
+
+            operationRepository.save(o, userId, accountId);
+            previous = o;
+        }
+    }
+
+    private void correctRemainOnAccountAfterOperation(Operation operation, long userId, long accountId) {
+        Account account = accountRepository.findById(accountId, userId);
+        BigDecimal diff = operation.isNew() ? operation.getAmount() : operationRepository.findById(operation.getId(), userId).getAmount().subtract(operation.getAmount());
+
+        if (operation.isExpense()) {
+            account.setAmount(account.getAmount().subtract(diff));
+        } else {
+            account.setAmount(account.getAmount().add(diff));
+        }
+
+        accountRepository.save(account, userId);
+    }
+
+    private Operation getLastOperationBeforeThis(Operation operation) {
+        Operation lastOperationBeforeThis = operationRepository.getLastOperationBefore(operation.getAccount().getId(), operation);
+        if (lastOperationBeforeThis == null) {
+            lastOperationBeforeThis = Operation.builder()
+                    .remainOnAccount(new BigDecimal(0.0))
+                    .date(LocalDateTime.of(1900, 1, 1, 0, 0))
+                    .build();
+        }
+        return lastOperationBeforeThis;
     }
 }

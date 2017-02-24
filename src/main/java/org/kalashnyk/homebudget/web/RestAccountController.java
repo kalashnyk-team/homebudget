@@ -2,6 +2,8 @@ package org.kalashnyk.homebudget.web;
 
 import org.kalashnyk.homebudget.AuthorizedUser;
 import org.kalashnyk.homebudget.model.Account;
+import org.kalashnyk.homebudget.model.OperationCategory;
+import org.kalashnyk.homebudget.repository.OperationCategoryRepository;
 import org.kalashnyk.homebudget.service.HomeBudgetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -21,14 +23,11 @@ import java.util.List;
 public class RestAccountController {
     private HomeBudgetService budgetService;
 
+    private OperationCategoryRepository categoryRepository;
+
     @Autowired
-    public RestAccountController(HomeBudgetService budgetService) {
+    public RestAccountController(HomeBudgetService budgetService, OperationCategoryRepository categoryRepository) {
         this.budgetService = budgetService;
-    }
-
-
-    @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Account> showAccountList(Model model) {
-        return budgetService.getAllAccounts(AuthorizedUser.id());
+        this.categoryRepository = categoryRepository;
     }
 }

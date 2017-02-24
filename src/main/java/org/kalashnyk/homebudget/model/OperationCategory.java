@@ -16,26 +16,35 @@ import java.util.List;
 @Getter
 @Setter
 public class OperationCategory extends NamedEntity {
-    @NotEmpty
+    public static final String IN_TRANSFER = ("IN_TRANSFER");
+    public static final String OUT_TRANSFER = ("OUT_TRANSFER");
+    public static final String OPENING = ("OPENING");
+
+    @NotNull
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private OperationType operationType;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User owner;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "parent_id", referencedColumnName = "id")
     private OperationCategory parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(fetch = FetchType.EAGER)
+    @JoinColumn(name = "parent_id")
     private List<OperationCategory> subCategories;
 
+    @Column(name = "level")
+    private Integer level = parent == null ? 0 : parent.getLevel() + 1;
+
+
     @Builder
-    private OperationCategory(Long id, String name, OperationType operationType, User owner, OperationCategory parent) {
+    private OperationCategory(Long id, int level, String name, OperationType operationType, User owner, OperationCategory parent) {
         super(id, name);
+        this.level = level;
         this.operationType = operationType;
         this.owner = owner;
         this.parent = parent;
@@ -45,13 +54,31 @@ public class OperationCategory extends NamedEntity {
         INCOME,
         EXPENSE,
         IN_TRANSFER,
-        OUT_TRANSFER;
+        OUT_TRANSFER,
+        OPENING,
+        REMAIN_CHANGING;
     }
 
+    @Override
     public String toString() {
-        if (parent == null)
+        if (parent == null) {
             return name;
-        else
-            return parent.toString() + ": " + name;
+        } else {
+            return parent + ": " + name;
+        }
+    }
+
+    public boolean isExpense() {
+        switch (operationType) {
+            case OUT_TRANSFER:
+            case EXPENSE:
+                return true;
+            case REMAIN_CHANGING:
+            case IN_TRANSFER:
+            case OPENING:
+                return false;
+            default:
+                return false;
+        }
     }
 }

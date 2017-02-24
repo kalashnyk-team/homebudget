@@ -2,6 +2,20 @@
     color: green;
 }
 
-.expense-category {
+.expense-category,
+.negative-amount,
+.expense {
     color: red;
+}
+
+@media only screen and (max-width: 1080px) {
+    [class*="col-"] {
+        font-size: 20px;
+    }
+}
+
+@media only screen and (min-width: 1081px){
+    [class*="col-"] {
+        font-size: 15px;
+    }
 }

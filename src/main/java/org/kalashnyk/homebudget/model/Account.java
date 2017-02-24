@@ -7,6 +7,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,7 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Account extends NamedEntity {
+@EqualsAndHashCode(callSuper = true)
+public class Account extends NamedEntity implements Comparable<Account> {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "currency_id")
@@ -53,22 +55,23 @@ public class Account extends NamedEntity {
     }
 
     public static List<Type> types() {
-        val types = new ArrayList<Type>();
-
-        for (Type type : Type.values())
-            if (type != Type.EXPENSE && type != Type.INCOME)
-                types.add(type);
-
-        return types;
+        return Arrays.asList(Type.values());
     }
 
-    public enum Type {
+    @Override
+    public int compareTo(Account anotherAccount) {
+        if (this.type.compareTo(anotherAccount.type) != 0) {
+            return this.type.compareTo(anotherAccount.type);
+        } else {
+            return this.name.compareTo(anotherAccount.name);
+        }
+    }
+
+    public enum Type implements Comparable<Type> {
         CASH,
         DEBIT_CARD,
         CREDIT_CARD,
         DEPOSIT,
-        DEBT,
-        EXPENSE,
-        INCOME;
+        DEBT;
     }
 }

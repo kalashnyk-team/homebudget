@@ -8,52 +8,50 @@
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
-    <h3>Создать/изменить категорию</h3>
-    <form class="form-horizontal" method="POST" action="categories/save">
-        <div class="form-group"><input name="id" type="hidden" value="${category.id}"></div>
-        <div class="form-group">
-            <label class="control-label col-sm-2" for="parent">Родительская категория:</label>
-            <div class="col-sm-2">
-                <select class="form-control" id="parent" name="parentId">
-                    <option>--Родительская категория--</option>
-                    <c:forEach items="${categories}" var="category">
-                        <jsp:useBean id="category" scope="page"
-                                     type="org.kalashnyk.homebudget.model.OperationCategory"/>
-                        <option
-                                value="${category.id}"
-                                class="
+    <div class="container">
+        <h3>Создать/изменить категорию</h3>
+        <form class="form-horizontal" method="POST">
+            <div class="form-group"><input name="id" type="hidden" value="${category.id}"></div>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-2">
+                    <label class="radio-inline"><input type="radio" name="type" value="expense" checked>Расход</label>
+                    <label class="radio-inline"><input type="radio" name="type" value="income">Доход</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="parent">Родительская категория</label>
+                <div class="col-md-2">
+                    <select class="form-control" id="parent" name="parentId">
+                        <option></option>
+                        <c:forEach items="${categories}" var="category">
+                            <jsp:useBean id="category" scope="page"
+                                         type="org.kalashnyk.homebudget.model.OperationCategory"/>
+                            <option
+                                    value="${category.id}"
+                                    class="
                         <c:choose>
                                 <c:when test="${category.operationType.name() == 'INCOME'}">income-category</c:when>
                         <c:otherwise>expense-category</c:otherwise>
                         </c:choose>"
-                        >${category.toString()}
-                        </option>
-                    </c:forEach>
-                </select>
+                            >${category}
+                            </option>
+                        </c:forEach>
+                    </select>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-2" for="type">Тип:</label>
-            <div class="col-sm-2">
-                <select class="form-control" id="type" name="type">
-                    <option disabled>Выберите тип</option>
-                    <option value="income">Доход</option>
-                    <option value="expense">Расход</option>
-                </select>
+            <div class="form-group">
+                <label class="control-label col-md-2" for="name">Название</label>
+                <div class="col-md-2">
+                    <input class="form-control" id="name" name="name" type="text" value="${category.name}"/>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <label class="control-label col-sm-2" for="name">Название: </label>
-            <div class="col-sm-2">
-                <input class="form-control" id="name" name="name" type="text" value="${category.name}"/>
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-2">
+                    <button class="btn btn-default" type="submit">Save</button>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <div class="col-sm-offset-2 col-sm-2">
-                <button class="btn btn-default" type="submit">Save</button>
-            </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </section>
 </body>
 </html>

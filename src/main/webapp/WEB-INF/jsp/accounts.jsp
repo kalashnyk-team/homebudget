@@ -24,7 +24,7 @@
                     <h4 class="modal-title">New account</h4>
                 </div>
                 <div class="modal-body">
-                    <form class="form-horizontal" method="POST" action="accounts/save">
+                    <form class="form-horizontal" method="POST" action="accounts/new">
                         <div class="form-group"><input name="id" type="hidden" value="${account.id}"></div>
                         <div class="form-group">
                             <label class="control-label col-sm-4" for="name">Название: </label>
@@ -79,29 +79,22 @@
     </div>
     <hr>
     <div class="container">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Название</th>
-                    <th>Валюта</th>
-                    <th>Тип</th>
-                    <th>Остаток</th>
-                    <th></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <c:forEach items="${accounts}" var="account">
-                    <tr>
-                        <jsp:useBean id="account" scope="page" type="org.kalashnyk.homebudget.model.Account"/>
-                        <td><a href="accounts/${account.id}/operations">${account.name}</a></td>
-                        <td>${account.currency.name}</td>
-                        <td>${account.type}</td>
-                        <td>${account.amount}</td>
-                        <td><a href="accounts/${account.id}">Update</a></td>
-                        <td><a href="accounts/${account.id}/delete">Delete</a></td>
-                    </tr>
-                </c:forEach>
-            </table>
+        <c:forEach items="${groupedAccounts}" var="group">
+            <div class="row">
+                <div class="col-md-12 col-lg-10">
+                        ${group.key}
+                </div>
+            </div>
+            <c:forEach items="${group.value}" var="acc">
+                <div class="row">
+                    <div class="col-md-12 col-lg-10">
+                        <a href="<c:url value="/operations?accountId=${acc.id}"/>">${acc.name}
+                            (<span class="<c:if test="${acc.amount<0}">negative-amount</c:if>">${acc.amount}${acc.currency}</span>)</a>
+                    </div>
+                </div>
+            </c:forEach>
+            <br>
+        </c:forEach>
     </div>
 </section>
 </body>
