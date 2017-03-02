@@ -16,4 +16,6 @@ public interface OperationCategoryRepository {
     boolean delete(long id, long userId);
 
     List<OperationCategory> getAll(long userId);
+
+    OperationCategory getServiceCategory(String serviceCategory);
 }

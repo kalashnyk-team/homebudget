@@ -1,8 +1,15 @@
 package org.kalashnyk.homebudget.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -17,9 +24,21 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
-public class User extends NamedEntity{
+@ToString(exclude = {"password", "roles", "accounts", "categories"})
+@NoArgsConstructor
+@Getter
+@Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class User extends NamedEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     public static final String DELETE = "User.delete";
     public static final String GET_ALL = "User.getAll";
+
+    @NotNull
+    @Column(name = "basic_currency_code")
+    private Currency basicCurrency;
 
     @NotEmpty
     @Column(name = "email")
@@ -27,73 +46,46 @@ public class User extends NamedEntity{
 
     @NotEmpty
     @Column(name = "password")
+    @JsonIgnore
     private String password;
 
     @NotEmpty
     @Column(name = "registered")
-    private Date registered;
+    private LocalDateTime registered;
 
     @NotEmpty
     @Column(name = "confirmed")
     private boolean confirmed;
 
-    @OneToMany(mappedBy = "owner")
+    @NotEmpty
+    @Column(name = "enabled")
+    private boolean enabled;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    @JsonIgnore
     private List<Account> accounts;
 
-    @ElementCollection(targetClass = Role.class)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    @JsonIgnore
+    private List<OperationCategory> categories;
+
+    @ElementCollection(fetch = FetchType.LAZY)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
+    @JsonIgnore
     private Set<Role> roles;
 
-    public User() {
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
+    @Builder
+    private User(Long id, String name, Currency basicCurrency,
+                 String email, String password, LocalDateTime registered,
+                 boolean confirmed, boolean enabled) {
+        super(id, name);
+        this.basicCurrency = basicCurrency;
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Date getRegistered() {
-        return registered;
-    }
-
-    public void setRegistered(Date registered) {
         this.registered = registered;
-    }
-
-    public boolean isConfirmed() {
-        return confirmed;
-    }
-
-    public void setConfirmed(boolean confirmed) {
         this.confirmed = confirmed;
-    }
-
-    public List<Account> getAccounts() {
-        return accounts;
-    }
-
-    public void setAccounts(List<Account> accounts) {
-        this.accounts = accounts;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
+        this.enabled = enabled;
     }
 }

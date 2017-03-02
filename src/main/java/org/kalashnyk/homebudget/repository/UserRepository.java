@@ -14,7 +14,9 @@ public interface UserRepository {
 
     List<User> getAll();
 
-    User findById(long id) throws DataAccessException;
+    User get(long id) throws DataAccessException;
 
     User save(User user) throws DataAccessException;
+
+    User getByEmail(String email);
 }

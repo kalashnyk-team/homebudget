@@ -1,101 +1,98 @@
 package org.kalashnyk.homebudget.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Currency;
 
 /**
  * Created by Sergii on 17.08.2016.
  */
 @Entity
 @Table(name = "operations")
-public class Operation extends BaseEntity {
-    @NotEmpty
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString(callSuper = true, exclude = {"correspondingOperation"})
+@EqualsAndHashCode(callSuper = true, exclude = {"correspondingOperation"})
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Operation extends BaseEntity implements Comparable<Operation>, Cloneable {
+    @OneToOne
+    @JoinColumn(name = "correspondent_id")
+    private Operation correspondingOperation;
+
+    @NotNull
     @Column(name = "date")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDateTime date;
 
-    @NotEmpty
     @ManyToOne
     @JoinColumn(name = "category_id")
     private OperationCategory category;
 
-    @NotEmpty
+    @NotNull
     @Column(name = "amount")
     private BigDecimal amount;
 
-    @NotEmpty
-    @Column(name = "currency")
-    private Currency currency;
+    @NotNull
+    @Column(name = "amount_after")
+    private BigDecimal remainOnAccount;
 
     @ManyToOne
-    @JoinColumn(name = "credit_acc_id")
-    private Account creditAccount;
+    @JoinColumn(name = "acc_id")
+    private Account account;
 
-    @ManyToOne
-    @JoinColumn(name = "debit_acc_id")
-    private Account debitAccount;
+    @Column(name = "comment")
+    private String comment;
 
-    @Column(name = "description")
-    private String description;
-
-    public Operation() {
-    }
-
-    public LocalDateTime getDate() {
-        return date;
-    }
-
-    public void setDate(LocalDateTime date) {
+    @Builder
+    public Operation(Long id, Operation correspondingOperation,
+                     LocalDateTime date, OperationCategory category,
+                     BigDecimal amount, Account account, String comment,
+                     BigDecimal remainOnAccount) {
+        super(id);
+        this.correspondingOperation = correspondingOperation;
         this.date = date;
-    }
-
-    public OperationCategory getCategory() {
-        return category;
-    }
-
-    public void setCategory(OperationCategory category) {
         this.category = category;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
         this.amount = amount;
+        this.account = account;
+        this.comment = comment;
+        this.remainOnAccount = remainOnAccount;
+    }
+
+    @Override
+    public int compareTo(Operation anotherOperation) {
+        if (this.date.compareTo(anotherOperation.date) == 0) {
+            return this.id.compareTo(anotherOperation.id);
+        } else {
+            return this.date.compareTo(anotherOperation.date);
+        }
+    }
+
+    public boolean isExpense() {
+        return category.isExpense();
+    }
+
+    public String description() {
+        switch (category.getOperationType()) {
+            case IN_TRANSFER:
+            case OUT_TRANSFER:
+                return category.getName() + " '" + this.correspondingOperation.account.name + "'";
+            default:
+                return category.getName();
+        }
+    }
+
+    public Operation clone() throws CloneNotSupportedException {
+        return (Operation) super.clone();
     }
 
     public Currency getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
-    }
-
-    public Account getCreditAccount() {
-        return creditAccount;
-    }
-
-    public void setCreditAccount(Account creditAccount) {
-        this.creditAccount = creditAccount;
-    }
-
-    public Account getDebitAccount() {
-        return debitAccount;
-    }
-
-    public void setDebitAccount(Account debitAccount) {
-        this.debitAccount = debitAccount;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+        return account.getCurrency();
     }
 }

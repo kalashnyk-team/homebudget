@@ -1,44 +1,25 @@
 package org.kalashnyk.homebudget.web;
 
-import org.kalashnyk.homebudget.AuthorizedUser;
-import org.kalashnyk.homebudget.service.HomeBudgetService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.servlet.http.HttpServletRequest;
+import org.kalashnyk.homebudget.util.exception.NotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Created by Sergii on 04.11.2016.
  */
 @Controller
 public class RootController {
-    @Autowired
-    private HomeBudgetService budgetService;
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String root() {
-        return "index";
-    }
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    public String login(ModelMap model,
+                        @RequestParam(value = "error", required = false) boolean error,
+                        @RequestParam(value = "message", required = false) String message) {
 
-    @RequestMapping(value = "/users", method = RequestMethod.GET)
-    public String userList(Model model) {
-        model.addAttribute("userList", budgetService.getAllUsers());
-        return "userList";
-    }
-
-    @RequestMapping(value = "/accounts", method = RequestMethod.GET)
-    public String mealList(Model model) {
-        model.addAttribute("accountList", budgetService.getAllAccounts(AuthorizedUser.id()));
-        return "accountList";
-    }
-
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public String setUser(HttpServletRequest request) {
-        int userId = Integer.valueOf(request.getParameter("userId"));
-        AuthorizedUser.setId(userId);
-        return "redirect:accounts";
+        model.put("error", error);
+        model.put("message", message);
+        return "login";
     }
 }

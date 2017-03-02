@@ -12,7 +12,7 @@ public interface OperationRepository {
 
     Operation findById(long id, long userId);
 
-    Operation save(Operation operation, long userId, long debitAccountId, long creditAccountId);
+    Operation save(Operation operation, long userId, long accountId);
 
     boolean delete(long id, long userId);
 
@@ -21,4 +21,10 @@ public interface OperationRepository {
     List<Operation> getAllForAccount(long userId, long accountId);
 
     List<Operation> getBetween(long userId, LocalDateTime start, LocalDateTime end);
+
+    List<Operation> getAllOperationAfter(long accountId, Operation before);
+
+    Operation getLastOperationBefore(long accountId, Operation after);
+
+    Operation getLastOperationForAccount(long accountId);
 }

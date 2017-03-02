@@ -1,45 +1,38 @@
 package org.kalashnyk.homebudget.service;
 
-import org.kalashnyk.homebudget.model.Account;
-import org.kalashnyk.homebudget.model.Operation;
-import org.kalashnyk.homebudget.model.OperationCategory;
-import org.kalashnyk.homebudget.model.User;
+import org.kalashnyk.homebudget.model.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Sergii on 02.09.2016.
  */
 public interface HomeBudgetService {
-    User getUser(long userId);
-
     Account getAccount(long accountId, long userId);
 
     Operation getOperation(long operationId, long userId);
 
     OperationCategory getOperationCategory(long operationCategoryId, long userId);
 
-    User saveUser(User user);
-
     Account saveAccount(Account account, long userId);
 
     OperationCategory saveOperationCategory(OperationCategory operationCategory, long userId);
 
     Operation saveOperation(Operation operation,
-                       long userId,
-                       long debitAccountId,
-                       long creditAccountId);
+                            long userId,
+                            long accountId);
 
-    void deleteUser(long id);
+    void saveTransfer(Operation outTransfer, Operation inTransfer, long userId, long fromAccountId, long toAccountId);
 
     void deleteAccount(long accountId, long userId);
 
     void deleteOperation(long operationId, long userId);
 
     void deleteOperationCategory(long operationCategoryId, long userId);
-
-    List<User> getAllUsers();
 
     List<Account> getAllAccounts(long userId);
 
@@ -50,4 +43,10 @@ public interface HomeBudgetService {
     List<OperationCategory> getAllOperationCategories(long userId);
 
     List<Operation> getOperationsBetween(long userId, LocalDateTime start, LocalDateTime end);
+
+    Map<Account.Type, Set<Account>> getAccountsGroupByType(long userId);
+
+    Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId);
+
+    OperationCategory getServiceCategory(String serviceCategory);
 }

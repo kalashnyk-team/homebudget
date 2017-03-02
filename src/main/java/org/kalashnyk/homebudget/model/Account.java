@@ -1,9 +1,14 @@
 package org.kalashnyk.homebudget.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Currency;
 import java.util.List;
 
 /**
@@ -11,87 +16,63 @@ import java.util.List;
  */
 @Entity
 @Table(name = "accounts")
-public class Account extends NamedEntity {
-    @Enumerated(EnumType.STRING)
-    @NotEmpty
-    @Column(name = "currency")
+@NoArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Account extends NamedEntity implements Comparable<Account> {
+    @NotNull
+    @Column(name = "currency_code")
     private Currency currency;
 
-    @NotEmpty
+    @NotNull
     @Column(name = "amount")
     private BigDecimal amount;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User owner;
 
-    @OneToMany(mappedBy = "debitAccount")
-    private List<Operation> incomes;
-
-    @OneToMany(mappedBy = "creditAccount")
-    private List<Operation> expenses;
+    @OneToMany(mappedBy = "account")
+    @JsonIgnore
+    private List<Operation> operations;
 
     @Enumerated(EnumType.STRING)
-    @NotEmpty
+    @NotNull
     @Column(name = "type")
-    private AccountType type;
+    private Type type;
 
-    public Account(String name, Currency currency, BigDecimal amount, User owner, AccountType type) {
-        this.name = name;
+    @Builder
+    private Account(Long id, String name, Currency currency,
+                    BigDecimal amount, User owner, Type type) {
+        super(id, name);
         this.currency = currency;
         this.amount = amount;
         this.owner = owner;
         this.type = type;
     }
 
-    public Account() {
+    public static List<Type> types() {
+        return Arrays.asList(Type.values());
     }
 
-    public AccountType getType() {
-        return type;
+    @Override
+    public int compareTo(Account anotherAccount) {
+        if (this.type.compareTo(anotherAccount.type) != 0) {
+            return this.type.compareTo(anotherAccount.type);
+        } else {
+            return this.name.compareTo(anotherAccount.name);
+        }
     }
 
-    public void setType(AccountType type) {
-        this.type = type;
-    }
-
-    public Currency getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal money) {
-        this.amount = money;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public List<Operation> getIncomes() {
-        return incomes;
-    }
-
-    public void setIncomes(List<Operation> incomes) {
-        this.incomes = incomes;
-    }
-
-    public List<Operation> getExpenses() {
-        return expenses;
-    }
-
-    public void setExpenses(List<Operation> expenses) {
-        this.expenses = expenses;
+    public enum Type implements Comparable<Type> {
+        CASH,
+        DEBIT_CARD,
+        CREDIT_CARD,
+        DEPOSIT,
+        DEBT;
     }
 }

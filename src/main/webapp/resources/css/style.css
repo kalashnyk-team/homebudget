@@ -1,0 +1,9 @@
+.income-category {
+    color: green;
+}
+
+.expense-category,
+.negative-amount,
+.expense {
+    color: red;
+}

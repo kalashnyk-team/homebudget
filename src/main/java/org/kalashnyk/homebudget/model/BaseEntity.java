@@ -1,5 +1,8 @@
 package org.kalashnyk.homebudget.model;
 
+
+import lombok.*;
+
 import javax.persistence.*;
 
 /**
@@ -7,19 +10,16 @@ import javax.persistence.*;
  */
 @MappedSuperclass
 @Access(AccessType.FIELD)
+@NoArgsConstructor
+@Getter
+@Setter
+@EqualsAndHashCode
 public class BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
 
-    public BaseEntity() {
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
+    BaseEntity(Long id) {
         this.id = id;
     }
 
