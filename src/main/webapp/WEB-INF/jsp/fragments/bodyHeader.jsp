@@ -25,15 +25,10 @@
 </div>
 
 <form class="form-horizontal" method="GET" action="<c:url value="/operations/new"/>">
-    <button class="btn btn-primary" type="submit">+ Доход/Расход</button>
+    <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-pencil"></span> Расход</button>
 </form>
 <form class="form-horizontal" method="GET" action="<c:url value="/operations/transfer"/>">
-    <button class="btn btn-primary" type="submit">+ Перевод</button>
+    <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-pencil"></span> Перевод</button>
 </form>
-<%--<div class="fluid-container">
-    <div class="row">
-    <div class="col-sm-5 col-md-2"><button formaction="<c:url value="/operations/new"/>">НОВЫЙ Доход/Расход</button></div>
-    </div>
-</div>--%>
 </body>
 </html>

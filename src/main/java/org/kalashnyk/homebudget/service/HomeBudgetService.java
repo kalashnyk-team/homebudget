@@ -12,12 +12,6 @@ import java.util.Set;
  * Created by Sergii on 02.09.2016.
  */
 public interface HomeBudgetService {
-    Currency getCurrency(int id);
-
-    Currency getCurrency(String stringId);
-
-    List<Currency> getAllCurrencies();
-
     Account getAccount(long accountId, long userId);
 
     Operation getOperation(long operationId, long userId);

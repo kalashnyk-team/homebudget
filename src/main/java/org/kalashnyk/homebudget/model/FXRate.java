@@ -9,9 +9,10 @@ import org.kalashnyk.homebudget.model.id.FXRateId;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 
 /**
- * Created by Sergii on 01.02.2017.
+ * Created by Sergii on 27.02.2017.
  */
 @Entity
 @Table(name = "fx_rates")
@@ -21,20 +22,18 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class FXRate {
-        @Id
-        @ManyToOne
-        @JoinColumn(name = "base_currency_id")
-        private Currency baseCurrency;
+    @Id
+    @Column(name = "base_currency_code")
+    private Currency baseCurrency;
 
-        @Id
-        @ManyToOne
-        @JoinColumn(name = "variable_currency_id")
-        private Currency variableCurrency;
+    @Id
+    @Column(name = "variable_currency_code")
+    private Currency variableCurrency;
 
-        @Column(name = "rate")
-        private BigDecimal rate;
+    @Column(name = "rate")
+    private BigDecimal rate;
 
-        @Id
-        @Column(name = "date")
-        private LocalDate date;
+    @Id
+    @Column(name = "date")
+    private LocalDate date;
 }

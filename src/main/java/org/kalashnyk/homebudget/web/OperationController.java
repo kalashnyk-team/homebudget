@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -110,5 +111,12 @@ public class OperationController {
         budgetService.saveOperation(operation, userId, accId);
 
         return "redirect:/accounts";
+    }
+
+    @RequestMapping(value = "/{id}/delete", method = RequestMethod.GET)
+    public String deleteOperation(@PathVariable(value = "id") Long id, Model model) {
+        Account account = budgetService.getOperation(id, AuthorizedUser.id()).getAccount();
+        budgetService.deleteOperation(id, AuthorizedUser.id());
+        return "redirect:/operations?accountId=" + account.getId();
     }
 }

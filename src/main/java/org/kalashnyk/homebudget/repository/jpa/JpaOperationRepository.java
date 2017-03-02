@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,11 +47,18 @@ public class JpaOperationRepository implements OperationRepository {
     }
 
     @Override
+    @Transactional
     public boolean delete(long id, long userId) {
-        return em.createQuery("DELETE FROM Operation o WHERE o.id=:id AND o.account.owner.id=:userId")
+        return em.createNativeQuery("DELETE FROM operations o " +
+                "WHERE o.id=:id " +
+                "AND o.acc_id IN (SELECT a.id FROM accounts a WHERE a.user_id=:userId)")
                 .setParameter("id", id)
                 .setParameter("userId", userId)
                 .executeUpdate() != 0;
+        /*return em.createQuery("DELETE FROM Operation o WHERE o.id=:id AND o.account.owner.id=:userId")
+                .setParameter("id", id)
+                .setParameter("userId", userId)
+                .executeUpdate() != 0;*/
     }
 
     @Override
@@ -100,18 +106,26 @@ public class JpaOperationRepository implements OperationRepository {
 
     @Override
     public Operation getLastOperationBefore(long accountId, Operation after) {
-        try {
-            return (Operation) em.createNativeQuery("SELECT * FROM operations o " +
-                    "WHERE o.acc_id=:accountId " +
-                    "AND o.date<=:afterDate " +
-                    "AND o.id<:id " +
-                    "ORDER BY date DESC, id DESC LIMIT 1", Operation.class)
-                    .setParameter("accountId", accountId)
-                    .setParameter("afterDate", after.getDate())
-                    .setParameter("id", after.isNew() ? Long.MAX_VALUE : after.getId())
-                    .getSingleResult();
-        } catch (NoResultException e){
-            return null;
-        }
+        List<Operation> operations = em.createNativeQuery("SELECT * FROM operations o " +
+                "WHERE o.acc_id=:accountId " +
+                "AND o.date<=:afterDate " +
+                "AND o.id<:id " +
+                "ORDER BY date DESC, id DESC LIMIT 1", Operation.class)
+                .setParameter("accountId", accountId)
+                .setParameter("afterDate", after.getDate())
+                .setParameter("id", after.getId())
+                .getResultList();
+        return DataAccessUtils.singleResult(operations);
+    }
+
+    @Override
+    public Operation getLastOperationForAccount(long accountId) {
+        List<Operation> operations = em.createQuery("SELECT o FROM Operation o " +
+                "WHERE o.account.id=:accountId " +
+                "ORDER BY o.date DESC, o.id DESC", Operation.class)
+                .setParameter("accountId", accountId)
+                .setMaxResults(1)
+                .getResultList();
+        return DataAccessUtils.singleResult(operations);
     }
 }

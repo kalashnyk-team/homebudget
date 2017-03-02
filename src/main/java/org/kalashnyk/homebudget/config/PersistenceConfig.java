@@ -67,8 +67,9 @@ public class PersistenceConfig {
         entityManagerFactoryBean.setJpaVendorAdapter(jpaVendorAdapter);
 
         Map<String, Object> jpaPropertyMap = entityManagerFactoryBean.getJpaPropertyMap();
-        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL}", Boolean.parseBoolean("${hibernate.format_sql}"));
-        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).USE_SQL_COMMENTS}", Boolean.parseBoolean("${hibernate.use_sql_comments}"));
+        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL}", "${hibernate.format_sql}");
+        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).USE_SQL_COMMENTS}", "${hibernate.use_sql_comments}");
+        jpaPropertyMap.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 
         entityManagerFactoryBean.setPackagesToScan(domainPackage);
         entityManagerFactoryBean.afterPropertiesSet();
@@ -81,6 +82,7 @@ public class PersistenceConfig {
     public JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
         jpaVendorAdapter.setShowSql(showSql);
+        jpaVendorAdapter.setDatabasePlatform("org.hibernate.dialect.PostgreSQLDialect");
 
         return jpaVendorAdapter;
     }
