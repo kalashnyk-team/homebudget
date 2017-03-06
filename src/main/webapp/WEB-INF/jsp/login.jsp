@@ -4,7 +4,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Bootstrap Snippet: Login Form</title>
+    <title>Home Budget: Login</title>
 
 
     <link rel='stylesheet prefetch' href='<c:url value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>'>

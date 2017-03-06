@@ -2,6 +2,7 @@ package org.kalashnyk.homebudget.service;
 
 import org.kalashnyk.homebudget.model.*;
 import org.kalashnyk.homebudget.repository.*;
+import org.kalashnyk.homebudget.util.FXRateUtil;
 import org.kalashnyk.homebudget.util.exception.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -23,15 +25,21 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
     private AccountRepository accountRepository;
     private OperationRepository operationRepository;
     private OperationCategoryRepository categoryRepository;
+    private FXRateRepository fxRateRepository;
+    private NBUFXRateRepository nbufxRateRepository;
 
 
     @Autowired
     public HomeBudgetServiceImpl(AccountRepository accountRepository,
                                  OperationRepository operationRepository,
-                                 OperationCategoryRepository categoryRepository) {
+                                 OperationCategoryRepository categoryRepository,
+                                 FXRateRepository fxRateRepository,
+                                 NBUFXRateRepository nbufxRateRepository) {
         this.accountRepository = accountRepository;
         this.operationRepository = operationRepository;
         this.categoryRepository = categoryRepository;
+        this.fxRateRepository = fxRateRepository;
+        this.nbufxRateRepository = nbufxRateRepository;
     }
 
     @Override
@@ -75,9 +83,8 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
     @Override
     @Transactional
     public Operation saveOperation(Operation operation, long userId, long accountId) {
-
+        calculateAmountBaseCurrencyAmount(operation);
         operationRepository.save(operation, userId, accountId);
-
         correctAllOperationsAfterThis(getLastOperationBeforeThis(operation), userId, accountId);
         correctRemainOnAccountAfterOperation(userId, accountId);
 
@@ -253,5 +260,25 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
             return operationRepository.getAllForAccount(userId, accountId);
 
         return operationRepository.getAllOperationAfter(accountId, before);
+    }
+
+    private void calculateAmountBaseCurrencyAmount(Operation operation) {
+        BigDecimal rate = getNBUFXRate(operation.baseCurrency(), operation.getCurrency(), operation.getDate().toLocalDate());
+        operation.setAmountInBaseCurrency(operation.getAmount().setScale(2).divide(rate, RoundingMode.HALF_UP));
+    }
+
+    private BigDecimal getNBUFXRate(Currency base, Currency variable, LocalDate date) {
+        if (base == variable) {
+            return BigDecimal.ONE;
+        } else if (variable == Currency.getInstance("UAH")) {
+            return nbufxRateRepository.get(base, date).getRate();
+        } else if (base == Currency.getInstance("UAH")) {
+            return BigDecimal.ONE.setScale(10).divide(nbufxRateRepository.get(variable, date).getRate(), RoundingMode.HALF_UP);
+
+        } else {
+            BigDecimal baseToUAHRate = nbufxRateRepository.get(base, date).getRate().setScale(10, RoundingMode.HALF_UP);
+            BigDecimal variableToUAHRate = nbufxRateRepository.get(variable, date).getRate().setScale(10, RoundingMode.HALF_UP);
+            return baseToUAHRate.divide(variableToUAHRate, RoundingMode.HALF_UP);
+        }
     }
 }

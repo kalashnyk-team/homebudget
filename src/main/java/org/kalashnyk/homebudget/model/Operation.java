@@ -50,11 +50,14 @@ public class Operation extends BaseEntity implements Comparable<Operation>, Clon
     @Column(name = "comment")
     private String comment;
 
+    @Column(name = "amount_in_base_currency")
+    private BigDecimal amountInBaseCurrency;
+
     @Builder
     public Operation(Long id, Operation correspondingOperation,
                      LocalDateTime date, OperationCategory category,
                      BigDecimal amount, Account account, String comment,
-                     BigDecimal remainOnAccount) {
+                     BigDecimal remainOnAccount, BigDecimal amountInBaseCurrency) {
         super(id);
         this.correspondingOperation = correspondingOperation;
         this.date = date;
@@ -63,6 +66,7 @@ public class Operation extends BaseEntity implements Comparable<Operation>, Clon
         this.account = account;
         this.comment = comment;
         this.remainOnAccount = remainOnAccount;
+        this.amountInBaseCurrency = amountInBaseCurrency;
     }
 
     @Override
@@ -84,7 +88,7 @@ public class Operation extends BaseEntity implements Comparable<Operation>, Clon
             case OUT_TRANSFER:
                 return category.getName() + " '" + this.correspondingOperation.account.name + "'";
             default:
-                return category.getName();
+                return category.toString();
         }
     }
 
@@ -94,5 +98,9 @@ public class Operation extends BaseEntity implements Comparable<Operation>, Clon
 
     public Currency getCurrency() {
         return account.getCurrency();
+    }
+
+    public Currency baseCurrency() {
+        return account.getOwner().getBasicCurrency();
     }
 }

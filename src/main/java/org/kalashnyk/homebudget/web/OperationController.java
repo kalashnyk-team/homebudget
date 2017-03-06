@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -61,7 +62,7 @@ public class OperationController {
                 .category(budgetService.getServiceCategory(OperationCategory.IN_TRANSFER))
                 .amount(amount)
                 .date(date.atStartOfDay())
-                .remainOnAccount(new BigDecimal(0.0))
+                .remainOnAccount(BigDecimal.ZERO)
                 .comment(comment)
                 .build();
 
@@ -70,7 +71,7 @@ public class OperationController {
                 .category(budgetService.getServiceCategory(OperationCategory.OUT_TRANSFER))
                 .amount(amount)
                 .date(date.atStartOfDay())
-                .remainOnAccount(new BigDecimal(0.0))
+                .remainOnAccount(BigDecimal.ZERO)
                 .comment(comment)
                 .build();
 
@@ -104,7 +105,8 @@ public class OperationController {
                 .category(category)
                 .amount(amount)
                 .date(date.atStartOfDay())
-                .remainOnAccount(new BigDecimal(0.0))
+                .remainOnAccount(BigDecimal.ZERO)
+                .amountInBaseCurrency(amount.setScale(2, RoundingMode.HALF_UP))
                 .comment(comment)
                 .build();
 

@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -24,7 +25,7 @@ import java.util.Map;
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = {"org.kalashnyk.**.repository.jpa"})
+@ComponentScan(basePackages = {"org.kalashnyk.**.repository.jpa", "org.kalashnyk.**.repository"})
 public class PersistenceConfig {
     private @Value("${database.url}") String url;
     private @Value("${database.driverClassName}") String driverClassName;
@@ -90,5 +91,11 @@ public class PersistenceConfig {
     @Bean(name = "transactionManager")
     public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate;
     }
 }

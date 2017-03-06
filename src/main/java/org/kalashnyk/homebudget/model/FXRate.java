@@ -1,9 +1,6 @@
 package org.kalashnyk.homebudget.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.kalashnyk.homebudget.model.id.FXRateId;
 
 import javax.persistence.*;
@@ -18,9 +15,9 @@ import java.util.Currency;
 @Table(name = "fx_rates")
 @IdClass(FXRateId.class)
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class FXRate {
     @Id
     @Column(name = "base_currency_code")
@@ -36,4 +33,12 @@ public class FXRate {
     @Id
     @Column(name = "date")
     private LocalDate date;
+
+    @Builder
+    public FXRate(Currency baseCurrency, Currency variableCurrency, BigDecimal rate, LocalDate date) {
+        this.baseCurrency = baseCurrency;
+        this.variableCurrency = variableCurrency;
+        this.rate = rate;
+        this.date = date;
+    }
 }
