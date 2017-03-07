@@ -25,4 +25,6 @@ public interface OperationRepository {
     List<Operation> getAllOperationAfter(long accountId, Operation before);
 
     Operation getLastOperationBefore(long accountId, Operation after);
+
+    Operation getLastOperationForAccount(long accountId);
 }

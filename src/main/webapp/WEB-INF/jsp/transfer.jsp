@@ -13,15 +13,15 @@
     <form class="form-horizontal" method="POST">
         <div class="form-group"><input name="id" type="hidden" value="${operation.id}"></div>
         <div class="form-group">
-            <label class="control-label col-md-7 col-lg-3" for="date">Дата</label>
-            <div class="col-md-5 col-lg-2">
-                <input class="form-control" id="date" name="date" type="date"
+            <label class="control-label col-xs-2 col-lg-2" for="datePicker">Дата</label>
+            <div class="col-xs-9 col-lg-3">
+                <input class="form-control" id="datePicker" name="date" type="date"
                        value="${operation.date}"/>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-lg-3 col-md-7" for="toAccount">Перевод со счета:</label>
-            <div class="col-lg-2 col-md-5">
+            <label class="control-label col-lg-2 col-xs-2" for="toAccount">Перевод со счета:</label>
+            <div class="col-lg-3 col-xs-9">
                 <select class="form-control" id="fromAccount" name="fromAccountId">
                     <option disabled>Выберите счет</option>
                     <c:forEach items="${accounts}" var="fromAccount">
@@ -33,8 +33,8 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-lg-3 col-md-7" for="toAccount">Перевод на счет:</label>
-            <div class="col-lg-2 col-md-5">
+            <label class="control-label col-lg-2 col-xs-2" for="toAccount">Перевод на счет:</label>
+            <div class="col-lg-3 col-xs-9">
                 <select class="form-control" id="toAccount" name="toAccountId">
                     <option disabled>Выберите счет</option>
                     <c:forEach items="${accounts}" var="toAccount">
@@ -46,24 +46,25 @@
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-md-7 col-lg-3" for="amount">Сумма</label>
-            <div class="col-md-5 col-lg-2">
+            <label class="control-label col-xs-2 col-lg-2" for="amount">Сумма</label>
+            <div class="col-xs-9 col-lg-3">
                 <input class="form-control" id="amount" name="amount" type="number" step="0.01" min="0"
                        value="${operation.amount}"/>
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label col-md-7 col-lg-3" for="comment">Комментарий</label>
-            <div class="col-md-5 col-lg-2">
+            <label class="control-label col-xs-2 col-lg-2" for="comment">Комментарий</label>
+            <div class="col-xs-9 col-lg-3">
                 <input class="form-control" id="comment" name="comment" type="text"/>
             </div>
         </div>
         <div class="form-group">
-            <div class="col-md-8 col-lg-offset-4">
+            <div class="col-xs-8 col-xs-offset-4">
                 <button class="btn btn-primary" type="submit">Save</button>
             </div>
         </div>
     </form>
 </section>
+<script src="<c:url value="/resources/js/main.js"/>"></script>
 </body>
 </html>

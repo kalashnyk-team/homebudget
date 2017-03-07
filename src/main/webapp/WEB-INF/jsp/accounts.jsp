@@ -39,10 +39,10 @@
                                     <option disabled>Выберите валюту</option>
                                     <c:forEach items="${currencies}" var="currency">
                                         <jsp:useBean id="currency" scope="page"
-                                                     type="org.kalashnyk.homebudget.model.Currency"/>
+                                                     type="java.util.Currency"/>
                                         <option
-                                                <c:if test="${account.currency.name == currency.name}">selected</c:if>
-                                                value="${currency.name}">${currency.name}</option>
+                                                <c:if test="${account.currency.currencyCode == currency.currencyCode}">selected</c:if>
+                                                value="${currency.currencyCode}">${currency.currencyCode}</option>
                                     </c:forEach>
                                 </select>
                             </div>
@@ -81,15 +81,15 @@
     <div class="container">
         <c:forEach items="${groupedAccounts}" var="group">
             <div class="row">
-                <div class="col-md-12 col-lg-10">
+                <div class="col-xs-12 col-lg-10">
                         ${group.key}
                 </div>
             </div>
             <c:forEach items="${group.value}" var="acc">
                 <div class="row">
-                    <div class="col-md-12 col-lg-10">
+                    <div class="col-xs-12 col-lg-10">
                         <a href="<c:url value="/operations?accountId=${acc.id}"/>">${acc.name}
-                            (<span class="<c:if test="${acc.amount<0}">negative-amount</c:if>">${acc.amount}${acc.currency}</span>)</a>
+                            (<span class="<c:if test="${acc.amount<0}">negative-amount</c:if>">${acc.amount}${acc.currency.currencyCode}</span>)</a>
                     </div>
                 </div>
             </c:forEach>

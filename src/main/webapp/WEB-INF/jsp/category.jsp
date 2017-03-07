@@ -4,23 +4,24 @@
 
 <html>
 <head>
+
 </head>
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>
     <div class="container">
         <h3>Создать/изменить категорию</h3>
-        <form class="form-horizontal" method="POST">
+        <form name="category" class="form-horizontal" method="POST">
             <div class="form-group"><input name="id" type="hidden" value="${category.id}"></div>
             <div class="form-group">
-                <div class="col-md-offset-2 col-md-2">
+                <div class="col-xs-offset-2 col-xs-10">
                     <label class="radio-inline"><input type="radio" name="type" value="expense" checked>Расход</label>
                     <label class="radio-inline"><input type="radio" name="type" value="income">Доход</label>
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-md-2" for="parent">Родительская категория</label>
-                <div class="col-md-2">
+                <label class="control-label col-xs-2" for="parent">Родительская категория</label>
+                <div class="col-xs-10">
                     <select class="form-control" id="parent" name="parentId">
                         <option></option>
                         <c:forEach items="${categories}" var="category">
@@ -40,13 +41,13 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-md-2" for="name">Название</label>
-                <div class="col-md-2">
+                <label class="control-label col-xs-2" for="name">Название</label>
+                <div class="col-xs-10">
                     <input class="form-control" id="name" name="name" type="text" value="${category.name}"/>
                 </div>
             </div>
             <div class="form-group">
-                <div class="col-md-offset-2 col-md-2">
+                <div class="col-xs-offset-2 col-xs-10">
                     <button class="btn btn-default" type="submit">Save</button>
                 </div>
             </div>

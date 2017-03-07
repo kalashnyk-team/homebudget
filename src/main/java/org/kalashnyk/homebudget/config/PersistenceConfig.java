@@ -14,6 +14,7 @@ import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -24,7 +25,7 @@ import java.util.Map;
  */
 @Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = {"org.kalashnyk.**.repository.jpa"})
+@ComponentScan(basePackages = {"org.kalashnyk.**.repository.jpa", "org.kalashnyk.**.repository"})
 public class PersistenceConfig {
     private @Value("${database.url}") String url;
     private @Value("${database.driverClassName}") String driverClassName;
@@ -67,8 +68,9 @@ public class PersistenceConfig {
         entityManagerFactoryBean.setJpaVendorAdapter(jpaVendorAdapter);
 
         Map<String, Object> jpaPropertyMap = entityManagerFactoryBean.getJpaPropertyMap();
-        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL}", Boolean.parseBoolean("${hibernate.format_sql}"));
-        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).USE_SQL_COMMENTS}", Boolean.parseBoolean("${hibernate.use_sql_comments}"));
+        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).FORMAT_SQL}", "${hibernate.format_sql}");
+        jpaPropertyMap.put("#{T(org.hibernate.cfg.AvailableSettings).USE_SQL_COMMENTS}", "${hibernate.use_sql_comments}");
+        jpaPropertyMap.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 
         entityManagerFactoryBean.setPackagesToScan(domainPackage);
         entityManagerFactoryBean.afterPropertiesSet();
@@ -81,6 +83,7 @@ public class PersistenceConfig {
     public JpaVendorAdapter jpaVendorAdapter() {
         HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
         jpaVendorAdapter.setShowSql(showSql);
+        jpaVendorAdapter.setDatabasePlatform("org.hibernate.dialect.PostgreSQLDialect");
 
         return jpaVendorAdapter;
     }
@@ -88,5 +91,11 @@ public class PersistenceConfig {
     @Bean(name = "transactionManager")
     public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
+    }
+
+    @Bean
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
+        return restTemplate;
     }
 }

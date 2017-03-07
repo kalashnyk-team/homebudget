@@ -1,5 +1,6 @@
 package org.kalashnyk.homebudget.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -15,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OperationCategory extends NamedEntity {
     public static final String IN_TRANSFER = ("IN_TRANSFER");
     public static final String OUT_TRANSFER = ("OUT_TRANSFER");

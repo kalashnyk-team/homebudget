@@ -9,11 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -60,7 +62,7 @@ public class OperationController {
                 .category(budgetService.getServiceCategory(OperationCategory.IN_TRANSFER))
                 .amount(amount)
                 .date(date.atStartOfDay())
-                .remainOnAccount(new BigDecimal(0.0))
+                .remainOnAccount(BigDecimal.ZERO)
                 .comment(comment)
                 .build();
 
@@ -69,7 +71,7 @@ public class OperationController {
                 .category(budgetService.getServiceCategory(OperationCategory.OUT_TRANSFER))
                 .amount(amount)
                 .date(date.atStartOfDay())
-                .remainOnAccount(new BigDecimal(0.0))
+                .remainOnAccount(BigDecimal.ZERO)
                 .comment(comment)
                 .build();
 
@@ -103,12 +105,20 @@ public class OperationController {
                 .category(category)
                 .amount(amount)
                 .date(date.atStartOfDay())
-                .remainOnAccount(new BigDecimal(0.0))
+                .remainOnAccount(BigDecimal.ZERO)
+                .amountInBaseCurrency(amount.setScale(2, RoundingMode.HALF_UP))
                 .comment(comment)
                 .build();
 
         budgetService.saveOperation(operation, userId, accId);
 
         return "redirect:/accounts";
+    }
+
+    @RequestMapping(value = "/{id}/delete", method = RequestMethod.GET)
+    public String deleteOperation(@PathVariable(value = "id") Long id, Model model) {
+        Account account = budgetService.getOperation(id, AuthorizedUser.id()).getAccount();
+        budgetService.deleteOperation(id, AuthorizedUser.id());
+        return "redirect:/operations?accountId=" + account.getId();
     }
 }
