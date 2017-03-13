@@ -18,4 +18,10 @@ public interface OperationCategoryRepository {
     List<OperationCategory> getAll(long userId);
 
     OperationCategory getServiceCategory(String serviceCategory);
+
+    List<OperationCategory> getAllRootExpenseCategory(long userId);
+
+    List<OperationCategory> getAllRootIncomeCategory(long userId);
+
+    List<OperationCategory> getSubCategories(OperationCategory parent);
 }

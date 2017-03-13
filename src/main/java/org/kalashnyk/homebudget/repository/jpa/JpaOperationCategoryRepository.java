@@ -66,4 +66,27 @@ public class JpaOperationCategoryRepository implements OperationCategoryReposito
                 .setParameter("serviceCategory", serviceCategory)
                 .getSingleResult();
     }
+
+    @Override
+    public List<OperationCategory> getAllRootExpenseCategory(long userId) {
+        return em.createQuery("SELECT c FROM OperationCategory c WHERE c.owner.id =:userId AND c.parent IS null AND c.operationType=:expense", OperationCategory.class)
+                .setParameter("userId", userId)
+                .setParameter("expense", OperationCategory.OperationType.EXPENSE)
+                .getResultList();
+    }
+
+    @Override
+    public List<OperationCategory> getAllRootIncomeCategory(long userId) {
+        return em.createQuery("SELECT c FROM OperationCategory c WHERE c.owner.id =:userId AND c.parent IS null AND c.operationType=:income", OperationCategory.class)
+                .setParameter("userId", userId)
+                .setParameter("income", OperationCategory.OperationType.INCOME)
+                .getResultList();
+    }
+
+    @Override
+    public List<OperationCategory> getSubCategories(OperationCategory parent) {
+        return em.createQuery("SELECT c FROM OperationCategory c WHERE c.parent=:parent", OperationCategory.class)
+                .setParameter("parent", parent)
+                .getResultList();
+    }
 }

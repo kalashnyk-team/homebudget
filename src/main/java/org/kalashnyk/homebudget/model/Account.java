@@ -61,10 +61,12 @@ public class Account extends NamedEntity implements Comparable<Account> {
 
     @Override
     public int compareTo(Account anotherAccount) {
-        if (this.type.compareTo(anotherAccount.type) != 0) {
+        if (type.compareTo(anotherAccount.type) != 0) {
             return this.type.compareTo(anotherAccount.type);
-        } else {
+        } else if (!name.equals(anotherAccount.name)){
             return this.name.compareTo(anotherAccount.name);
+        } else {
+            return id.compareTo(anotherAccount.getId());
         }
     }
 

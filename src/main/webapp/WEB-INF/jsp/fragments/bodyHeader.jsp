@@ -14,7 +14,7 @@
     <script src="<c:url value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"/>"></script>
     <%--<meta name="viewport" content="width=device-width, initial-scale=1.0">--%>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <script src="<c:url value="/resources/js/main.js"/>"></script>
 </head>
 <body>
 

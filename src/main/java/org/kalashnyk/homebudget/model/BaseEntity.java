@@ -1,6 +1,7 @@
 package org.kalashnyk.homebudget.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -23,6 +24,7 @@ public class BaseEntity {
         this.id = id;
     }
 
+    @JsonIgnore
     public boolean isNew() {
         return id == null;
     }

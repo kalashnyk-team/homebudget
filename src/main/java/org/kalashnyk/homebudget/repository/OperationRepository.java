@@ -1,7 +1,9 @@
 package org.kalashnyk.homebudget.repository;
 
 import org.kalashnyk.homebudget.model.Operation;
+import org.kalashnyk.homebudget.model.OperationCategory;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -27,4 +29,6 @@ public interface OperationRepository {
     Operation getLastOperationBefore(long accountId, Operation after);
 
     Operation getLastOperationForAccount(long accountId);
+
+    List<Operation> getOperationsForCategory(OperationCategory category, LocalDate start, LocalDate end);
 }

@@ -2,7 +2,6 @@ package org.kalashnyk.homebudget.service;
 
 import org.kalashnyk.homebudget.model.*;
 import org.kalashnyk.homebudget.repository.*;
-import org.kalashnyk.homebudget.util.FXRateUtil;
 import org.kalashnyk.homebudget.util.exception.ExceptionUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -263,22 +262,31 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
     }
 
     private void calculateAmountBaseCurrencyAmount(Operation operation) {
-        BigDecimal rate = getNBUFXRate(operation.baseCurrency(), operation.getCurrency(), operation.getDate().toLocalDate());
+        BigDecimal rate = getNBUFXRate(operation.baseCurrency(), operation.getCurrency(), operation.getDate().toLocalDate()).getRate();
         operation.setAmountInBaseCurrency(operation.getAmount().setScale(2).divide(rate, RoundingMode.HALF_UP));
     }
 
-    private BigDecimal getNBUFXRate(Currency base, Currency variable, LocalDate date) {
+    @Override
+    public FXRate getNBUFXRate(Currency base, Currency variable, LocalDate date) {
+        FXRate rate = FXRate.builder()
+                .baseCurrency(base)
+                .variableCurrency(variable)
+                .date(date)
+                .build();
+
         if (base == variable) {
-            return BigDecimal.ONE;
+            rate.setRate(BigDecimal.ONE);
         } else if (variable == Currency.getInstance("UAH")) {
-            return nbufxRateRepository.get(base, date).getRate();
+            rate.setRate(nbufxRateRepository.get(base, date).getRate());
         } else if (base == Currency.getInstance("UAH")) {
-            return BigDecimal.ONE.setScale(10).divide(nbufxRateRepository.get(variable, date).getRate(), RoundingMode.HALF_UP);
+            rate.setRate(BigDecimal.ONE.setScale(10).divide(nbufxRateRepository.get(variable, date).getRate(), RoundingMode.HALF_UP));
 
         } else {
             BigDecimal baseToUAHRate = nbufxRateRepository.get(base, date).getRate().setScale(10, RoundingMode.HALF_UP);
             BigDecimal variableToUAHRate = nbufxRateRepository.get(variable, date).getRate().setScale(10, RoundingMode.HALF_UP);
-            return baseToUAHRate.divide(variableToUAHRate, RoundingMode.HALF_UP);
+            rate.setRate(baseToUAHRate.divide(variableToUAHRate, RoundingMode.HALF_UP));
         }
+
+        return rate;
     }
 }
