@@ -39,6 +39,7 @@ public class PersistenceConfig {
         PropertySourcesPlaceholderConfigurer propertiesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
         Resource[] resourceLocations = new Resource[]{
                 new ClassPathResource("db/postgres.properties")
+                /*new ClassPathResource("db/postgres_vpsdime.properties")*/
         };
         propertiesPlaceholderConfigurer.setLocations(resourceLocations);
         return propertiesPlaceholderConfigurer;

@@ -11,3 +11,12 @@
 #header{
     width: 90%;
 }
+
+.chart {
+    width: 100%;
+    min-height: 350px;
+}
+
+#histogram_signature, #pie_chart_signature{
+    text-align: center;
+}

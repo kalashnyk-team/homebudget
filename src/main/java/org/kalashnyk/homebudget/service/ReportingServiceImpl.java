@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.*;
 
 /**
@@ -48,6 +49,19 @@ public class ReportingServiceImpl implements ReportingService {
         }
 
         return list;
+    }
+
+    @Override
+    public List<Pair<YearMonth, BigDecimal>> getExpensesByMonthes(long userId, LocalDate start, LocalDate end) {
+        List<Pair<YearMonth, BigDecimal>> expensesByMonthes = new ArrayList<>();
+        List<Operation> operations = operationRepository.getExpenses(userId, start, end);
+        Map<YearMonth, BigDecimal> map = new TreeMap<>();
+        for (Operation o : operations) {
+            YearMonth yearMonth = YearMonth.from(o.getDate());
+            map.put(yearMonth, map.getOrDefault(yearMonth, BigDecimal.ZERO).add(o.getAmountInBaseCurrency()));
+        }
+        map.forEach((yearMonth, value) -> expensesByMonthes.add(new Pair<>(yearMonth, value)));
+        return expensesByMonthes;
     }
 
     private List<OperationCategory> parentWithChildren(OperationCategory parent, List<OperationCategory> list) {

@@ -140,4 +140,18 @@ public class JpaOperationRepository implements OperationRepository {
                 .setParameter("end", end.atTime(LocalTime.MAX))
                 .getResultList();
     }
+
+    @Override
+    public List<Operation> getExpenses(long userId, LocalDate start, LocalDate end) {
+        return em.createQuery("SELECT o FROM Operation o " +
+                "WHERE o.category.operationType=:operationType " +
+                "AND o.account.owner.id=:userId " +
+                "AND o.date BETWEEN :start AND :end", Operation.class)
+                .setParameter("operationType", OperationCategory.OperationType.EXPENSE)
+                .setParameter("userId", userId)
+                .setParameter("start", start.atStartOfDay())
+                .setParameter("end", end.atTime(LocalTime.MAX))
+                .getResultList();
+
+    }
 }

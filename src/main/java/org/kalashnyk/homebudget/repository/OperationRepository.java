@@ -31,4 +31,6 @@ public interface OperationRepository {
     Operation getLastOperationForAccount(long accountId);
 
     List<Operation> getOperationsForCategory(OperationCategory category, LocalDate start, LocalDate end);
+
+    List<Operation> getExpenses(long userId, LocalDate start, LocalDate end);
 }
