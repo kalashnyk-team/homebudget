@@ -7,7 +7,7 @@
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <div id="main-container">
 <section>
-    <h3>Операции по счету ${account.name}</h3>
+    <h3>Операции по счету ${account.name} </h3>
     <div class="container-fluid">
         <c:forEach items="${groupedOperations}" var="group">
             <div class="row">
@@ -37,6 +37,8 @@
     </div>
 </section></div>
 <script>
+    $('h3').append("(" + getYearMonth(new Date()) + ")");
+
     function confirmDeleting(id) {
         var confirmation = confirm("Вы действительно хотите удалить оперцию?");
         if (confirmation) {

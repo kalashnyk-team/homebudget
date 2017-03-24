@@ -1,7 +1,9 @@
 package org.kalashnyk.homebudget.repository;
 
 import org.kalashnyk.homebudget.model.Operation;
+import org.kalashnyk.homebudget.model.OperationCategory;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,6 +21,7 @@ public interface OperationRepository {
     List<Operation> getAll(long userId);
 
     List<Operation> getAllForAccount(long userId, long accountId);
+    List<Operation> getAllForAccountBetween(long userId, long accountId, LocalDate start, LocalDate end);
 
     List<Operation> getBetween(long userId, LocalDateTime start, LocalDateTime end);
 
@@ -27,4 +30,8 @@ public interface OperationRepository {
     Operation getLastOperationBefore(long accountId, Operation after);
 
     Operation getLastOperationForAccount(long accountId);
+
+    List<Operation> getOperationsForCategory(OperationCategory category, LocalDate start, LocalDate end);
+
+    List<Operation> getExpenses(long userId, LocalDate start, LocalDate end);
 }

@@ -1,8 +1,6 @@
 package org.kalashnyk.homebudget.web;
 
 
-import org.kalashnyk.homebudget.util.exception.NotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
  * Created by Sergii on 04.11.2016.
  */
 @Controller
+@RequestMapping(value = "/")
 public class RootController {
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
@@ -21,5 +20,10 @@ public class RootController {
         model.put("error", error);
         model.put("message", message);
         return "login";
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String index() {
+        return "index";
     }
 }

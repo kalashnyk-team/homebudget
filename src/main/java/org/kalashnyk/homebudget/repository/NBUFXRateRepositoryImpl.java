@@ -15,7 +15,7 @@ import java.util.Currency;
 @Repository
 public class NBUFXRateRepositoryImpl implements NBUFXRateRepository {
     private RestTemplate restTemplate;
-    public DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
     private String urlPattern = "https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?valcode=%s&date=%s&json";
 
     @Autowired
@@ -27,6 +27,10 @@ public class NBUFXRateRepositoryImpl implements NBUFXRateRepository {
     public NBUFXRate get(Currency currency, LocalDate date) {
         final String uri = String.format(urlPattern, currency.getCurrencyCode(), fmt.format(date));
         NBUFXRate[] nbufxRate = restTemplate.getForObject(uri, NBUFXRate[].class);
-        return nbufxRate[0];
+        try {
+            return nbufxRate[0];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
     }
 }

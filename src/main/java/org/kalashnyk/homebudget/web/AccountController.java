@@ -22,7 +22,7 @@ import java.util.Currency;
  * Created by Sergii on 25.01.2017.
  */
 @Controller
-@RequestMapping(value = {"/accounts", "/"})
+@RequestMapping(value = {"/accounts"})
 public class AccountController {
 
     private HomeBudgetService budgetService;

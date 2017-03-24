@@ -4,6 +4,7 @@ import org.kalashnyk.homebudget.model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +47,9 @@ public interface HomeBudgetService {
 
     Map<Account.Type, Set<Account>> getAccountsGroupByType(long userId);
 
-    Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId);
+    Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId, LocalDate start, LocalDate end);
 
     OperationCategory getServiceCategory(String serviceCategory);
+
+    FXRate getNBUFXRate(Currency base, Currency variable, LocalDate date);
 }

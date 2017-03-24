@@ -27,7 +27,9 @@
                     <c:forEach items="${accounts}" var="account">
                         <jsp:useBean id="account" scope="page"
                                      type="org.kalashnyk.homebudget.model.Account"/>
-                        <option value="${account.id}">${account.name} (<span class="<c:if test="${account.amount<0}">negative-amount</c:if>">${account.amount} ${account.currency}</span>)</option>
+                        <option value="${account.id}">${account.name} (<span
+                                class="<c:if test="${account.amount<0}">negative-amount</c:if>">${account.amount} ${account.currency}</span>)
+                        </option>
                     </c:forEach>
                 </select>
             </div>
@@ -73,6 +75,11 @@
         </div>
     </form>
 </section>
-<script src="<c:url value="/resources/js/main.js"/>"></script>
+<script>
+    $(document).ready(function () {
+        var today = isoDate(new Date());
+        $('#datePicker').val(today);
+    });
+</script>
 </body>
 </html>

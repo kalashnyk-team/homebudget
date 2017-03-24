@@ -1,10 +1,9 @@
 package org.kalashnyk.homebudget.web;
 
-import org.kalashnyk.homebudget.AuthorizedUser;
+
 import org.kalashnyk.homebudget.model.FXRate;
-import org.kalashnyk.homebudget.model.Operation;
-import org.kalashnyk.homebudget.repository.FXRateRepository;
 import org.kalashnyk.homebudget.service.HomeBudgetService;
+import org.kalashnyk.homebudget.service.ReportingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -15,8 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Currency;
-import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Created by Sergii on 16.02.2017.
@@ -25,27 +25,27 @@ import java.util.List;
 @RequestMapping(value = "/rest/rates")
 public class RestFXRateController {
 
-private HomeBudgetService budgetService;
-    private FXRateRepository fxRateRepository;
+    private HomeBudgetService budgetService;
 
     @Autowired
-    public RestFXRateController(HomeBudgetService budgetService, FXRateRepository fxRateRepository) {
+    public RestFXRateController(HomeBudgetService budgetService) {
         this.budgetService = budgetService;
-        this.fxRateRepository = fxRateRepository;
     }
 
     @RequestMapping(method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public FXRate getRate(@RequestParam String baseCurrency,
-                                @RequestParam String variableCurrency,
-                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+                          @RequestParam String variableCurrency,
+                          @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        if (date == null || date.compareTo(LocalDate.now(ZoneId.of(TimeZone.getTimeZone("Europe/Kiev").getID()))) > 0)
+            date = LocalDate.now(ZoneId.of(TimeZone.getTimeZone("Europe/Kiev").getID()));
 
 
-        return fxRateRepository.get(Currency.getInstance(baseCurrency), Currency.getInstance(variableCurrency), date);
+        return budgetService.getNBUFXRate(
+                Currency.getInstance(baseCurrency.toUpperCase()),
+                Currency.getInstance(variableCurrency.toUpperCase()),
+                date);
     }
 
-    @RequestMapping(value = "/operations", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<Operation> getALLOperationsForAccount(@RequestParam Long accountId) {
 
-        return budgetService.getAllOperationsForAccount(AuthorizedUser.id(),accountId);
-    }
 }

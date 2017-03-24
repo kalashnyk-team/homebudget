@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 
 /**
  * Created by Sergii on 08.02.2017.
@@ -77,15 +78,26 @@ public class OperationController {
 
         budgetService.saveTransfer(outTransfer, inTransfer, userId, fromAccountId, toAccountId);
 
-        return "redirect:/accounts";
+        return "redirect:/";
     }
 
     @RequestMapping(method = RequestMethod.GET)
     public String getOperationList(@RequestParam(required = false) Long accountId,
+                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+                                   @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end,
                                    Model model) {
+        if (start == null)
+            start = YearMonth.from(LocalDate.now()).atDay(1); //first day of current month
+
+        if (end == null)
+            end = LocalDate.now();
+
         if (accountId != null) {
             model.addAttribute("account", budgetService.getAccount(accountId, AuthorizedUser.id()));
-            model.addAttribute("groupedOperations", budgetService.getOperationsForAccountGroupByDate(AuthorizedUser.id(), accountId));
+            model.addAttribute("groupedOperations",
+                    budgetService.getOperationsForAccountGroupByDate(AuthorizedUser.id(), accountId,
+                    start,
+                    end));
         }
         return "operations";
     }
@@ -112,7 +124,7 @@ public class OperationController {
 
         budgetService.saveOperation(operation, userId, accId);
 
-        return "redirect:/accounts";
+        return "redirect:/";
     }
 
     @RequestMapping(value = "/{id}/delete", method = RequestMethod.GET)

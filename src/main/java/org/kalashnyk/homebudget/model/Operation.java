@@ -86,7 +86,14 @@ public class Operation extends BaseEntity implements Comparable<Operation>, Clon
         switch (category.getOperationType()) {
             case IN_TRANSFER:
             case OUT_TRANSFER:
-                return category.getName() + " '" + this.correspondingOperation.account.name + "'";
+                return new StringBuilder(category.getName())
+                        .append(" '")
+                        //Костыль при миграции базы
+                        //операции-переводы без операции-корреспондента на др.счете
+                        //TODO переделать после исправления
+                        .append(correspondingOperation == null ? null : correspondingOperation.account.name)
+                        .append("'")
+                        .toString();
             default:
                 return category.toString();
         }

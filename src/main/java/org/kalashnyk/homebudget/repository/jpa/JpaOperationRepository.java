@@ -2,6 +2,7 @@ package org.kalashnyk.homebudget.repository.jpa;
 
 import org.kalashnyk.homebudget.model.Account;
 import org.kalashnyk.homebudget.model.Operation;
+import org.kalashnyk.homebudget.model.OperationCategory;
 import org.kalashnyk.homebudget.repository.OperationRepository;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.stereotype.Repository;
@@ -9,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -79,6 +82,20 @@ public class JpaOperationRepository implements OperationRepository {
     }
 
     @Override
+    public List<Operation> getAllForAccountBetween(long userId, long accountId, LocalDate start, LocalDate end) {
+        return em.createQuery("SELECT o FROM Operation o LEFT JOIN FETCH o.account " +
+                "WHERE o.account.owner.id=:userId " +
+                "AND o.account.id=:accountId " +
+                "AND o.date BETWEEN :start AND :end " +
+                "ORDER BY o.date, o.id", Operation.class)
+                .setParameter("userId", userId)
+                .setParameter("accountId", accountId)
+                .setParameter("start", start.atStartOfDay())
+                .setParameter("end", end.atTime(LocalTime.MAX))
+                .getResultList();
+    }
+
+    @Override
     public List<Operation> getBetween(long userId, LocalDateTime start, LocalDateTime end) {
         return em.createQuery(
                 "SELECT o FROM Operation o " +
@@ -127,5 +144,28 @@ public class JpaOperationRepository implements OperationRepository {
                 .setMaxResults(1)
                 .getResultList();
         return DataAccessUtils.singleResult(operations);
+    }
+
+    @Override
+    public List<Operation> getOperationsForCategory(OperationCategory category, LocalDate start, LocalDate end) {
+        return em.createQuery("SELECT o FROM  Operation o WHERE o.category=:category AND o.date BETWEEN :start AND :end", Operation.class)
+                .setParameter("category", category)
+                .setParameter("start", start.atStartOfDay())
+                .setParameter("end", end.atTime(LocalTime.MAX))
+                .getResultList();
+    }
+
+    @Override
+    public List<Operation> getExpenses(long userId, LocalDate start, LocalDate end) {
+        return em.createQuery("SELECT o FROM Operation o " +
+                "WHERE o.category.operationType=:operationType " +
+                "AND o.account.owner.id=:userId " +
+                "AND o.date BETWEEN :start AND :end", Operation.class)
+                .setParameter("operationType", OperationCategory.OperationType.EXPENSE)
+                .setParameter("userId", userId)
+                .setParameter("start", start.atStartOfDay())
+                .setParameter("end", end.atTime(LocalTime.MAX))
+                .getResultList();
+
     }
 }
