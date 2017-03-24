@@ -82,6 +82,20 @@ public class JpaOperationRepository implements OperationRepository {
     }
 
     @Override
+    public List<Operation> getAllForAccountBetween(long userId, long accountId, LocalDate start, LocalDate end) {
+        return em.createQuery("SELECT o FROM Operation o LEFT JOIN FETCH o.account " +
+                "WHERE o.account.owner.id=:userId " +
+                "AND o.account.id=:accountId " +
+                "AND o.date BETWEEN :start AND :end " +
+                "ORDER BY o.date, o.id", Operation.class)
+                .setParameter("userId", userId)
+                .setParameter("accountId", accountId)
+                .setParameter("start", start.atStartOfDay())
+                .setParameter("end", end.atTime(LocalTime.MAX))
+                .getResultList();
+    }
+
+    @Override
     public List<Operation> getBetween(long userId, LocalDateTime start, LocalDateTime end) {
         return em.createQuery(
                 "SELECT o FROM Operation o " +

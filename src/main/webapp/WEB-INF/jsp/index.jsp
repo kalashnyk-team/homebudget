@@ -17,12 +17,18 @@
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <div class="fluid-container">
-    <div id="pie_chart_container" class="col-xs-12 col-sm-5 col-md-4 col-lg-3">
-        <div id="pie_chart_signature"><b>Куда уходят деньги</b></div>
+    <div id="pie_chart_container" class="col-xs-12 col-sm-4 col-md-3 col-lg-3">
         <div id="pie_chart" class="chart">
         </div>
+        <div id="pie_chart_signature"><b>Куда уходят деньги</b></div>
     </div>
-    <div id="histogram_container" class="col-xs-12 col-sm-7 col-md-6 col-lg-4">
+    <form>
+        <label for="start">Начало периода:</label>
+        <input id="start" type="date">
+        <label for="end">Конец периода:</label>
+        <input id="end" type="date">
+    </form>
+    <div id="histogram_container" class="col-xs-12 col-sm-8 col-md-9 col-lg-9">
         <div id="histogram" class="chart">
         </div>
         <div id="histogram_signature"><b>Затраты по месяцам</b></div>
@@ -31,30 +37,42 @@
 
 
 <script type="text/javascript">
-    google.charts.load('current', {'packages': ['corechart', 'bar']});
+    var lang = getUserLanguage();
+    if (lang == undefined)
+        lang = 'en-US';
+    google.charts.load('current', {'packages': ['corechart'], 'language': lang});
     var today = new Date();
 
     google.charts.setOnLoadCallback(drawPieChart);
-    $('#pie_chart_signature').append("<p><b>(" + getYearMonth(today) + ")</b></p>");
-    function drawPieChart() {
-        var jsonData = $.ajax({
-            url: "/homebudget/rest/expenses?groupBy=category",
-            dataType: "json",
-            async: false
-        }).responseJSON;
+    $('#pie_chart_signature').append("<p><b>(" + getYearMonth(today, lang) + ")</b></p>");
 
-        var array = new Array(jsonData.length + 1);
+    var expensesByCategories = $.ajax({
+        url: "/homebudget/rest/expenses?groupBy=category",
+        dataType: "json",
+        async: false
+    }).responseJSON;
+
+    function drawPieChart() {
+
+        var array = new Array();
         array[0] = ['category', 'amount'];
 
-        jsonData.forEach(function (item, i, arr) {
-            array[i + 1] = [item.key.name, item.value];
+        expensesByCategories.forEach(function (item, i, arr) {
+            if (i < 6) {
+                array[i + 1] = [item.key.name, item.value];
+            } else {
+                var amount = array[6][1] + item.value;
+                array[6] = ['Прочее', amount];
+            }
         });
 
         var data = google.visualization.arrayToDataTable(array);
 
         var options = {
+            chartArea: {width: '95%', height: '95%'},
             titlePosition: 'none',
-            legend: 'none'
+            legend: 'none',
+            pieHole: 0.4
         };
 
         var chart = new google.visualization.PieChart(document.getElementById('pie_chart'));
@@ -68,37 +86,45 @@
     var to = isoDate(today);
     $('#histogram_signature').append("<b> (" + from + " - " + to + ")</b></p>");
 
+    var expensesByMonthes = $.ajax({
+        url: "/homebudget/rest/expenses?groupBy=month&start=" + from + "&end=" + to,
+        dataType: "json",
+        async: false
+    }).responseJSON;
+
     function drawHistogram() {
-        var jsonData = $.ajax({
-            url: "/homebudget/rest/expenses?groupBy=month&start=" + from + "&end=" + to,
-            dataType: "json",
-            async: false
-        }).responseJSON;
 
-        var array = new Array(jsonData.length + 1);
-        array[0] = ['Месяц', 'Затраты'];
+        var data = new google.visualization.DataTable();
 
-        jsonData.forEach(function (item, i, arr) {
-            array[i + 1] = [item.key[0] + "-" + item.key[1], item.value];
+        data.addColumn('date', 'Месяц');
+        data.addColumn('number', 'Затраты');
+
+        expensesByMonthes.forEach(function (item, i, arr) {
+            var date = new Date(item.key[0], item.key[1] - 1);
+            var yearMonth = getYearMonth(date, lang);
+            data.addRow([{v: date, f: yearMonth}, item.value]);
         });
 
-        var data = google.visualization.arrayToDataTable(array);
-
         var options = {
-            title: 'Затраты по месяцам',
-            chartArea: {width: '50%'},
-            hAxis: {
-                title: 'Всего потрачено',
-                minValue: 0
-            },
+            chartArea: {width: '85%', height: '80%'},
+
             vAxis: {
-                title: 'Месяц'
+                format: 'decimal',
             },
-            legend: {position: "none"}
+            legend: {
+                position: "none"
+            },
+            trendlines: {0: {
+                color: 'red'
+            }}
         };
 
-        var chart = new google.charts.Bar(document.getElementById('histogram'));
-
+        var chart = new google.visualization.ColumnChart(document.getElementById('histogram'));
+        google.visualization.events.addListener(chart, 'onmouseover', function(e){
+            $('svg *:contains("* x")').each(function(){
+                $(this).text('')
+            })
+        })
         chart.draw(data, options);
     }
 

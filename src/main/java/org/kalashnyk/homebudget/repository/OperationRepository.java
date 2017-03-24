@@ -21,6 +21,7 @@ public interface OperationRepository {
     List<Operation> getAll(long userId);
 
     List<Operation> getAllForAccount(long userId, long accountId);
+    List<Operation> getAllForAccountBetween(long userId, long accountId, LocalDate start, LocalDate end);
 
     List<Operation> getBetween(long userId, LocalDateTime start, LocalDateTime end);
 

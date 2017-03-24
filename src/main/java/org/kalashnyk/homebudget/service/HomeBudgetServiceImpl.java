@@ -197,9 +197,9 @@ public class HomeBudgetServiceImpl implements HomeBudgetService {
     }
 
     @Override
-    public Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId) {
+    public Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId, LocalDate start, LocalDate end) {
         Map<LocalDate, Set<Operation>> grouppedOperations = new TreeMap<>();
-        List<Operation> operations = operationRepository.getAllForAccount(userId, accountId);
+        List<Operation> operations = operationRepository.getAllForAccountBetween(userId, accountId, start, end);
 
         System.out.println(Arrays.toString(operations.toArray()));
 

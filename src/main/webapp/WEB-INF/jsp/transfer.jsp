@@ -65,6 +65,11 @@
         </div>
     </form>
 </section>
-<script src="<c:url value="/resources/js/main.js"/>"></script>
+<script>
+    $(document).ready(function () {
+        var today = isoDate(new Date());
+        $('#datePicker').val(today);
+    });
+</script>
 </body>
 </html>

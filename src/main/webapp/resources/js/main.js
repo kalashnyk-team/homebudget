@@ -1,10 +1,6 @@
 /**
  * Created by Sergii on 26.02.2017.
  */
-$(document).ready(function () {
-    var today = isoDate(new Date());
-    $('#datePicker').val(today);
-});
 
 function isoDate(date) {
     var day = ("0" + date.getDate()).slice(-2);
@@ -29,11 +25,22 @@ function yearBeforeIsoDate(date) {
     return year + "-" + month + "-" + day;
 }
 
-function getYearMonth(date) {
+function getYearMonth(date, lang) {
     var year = date.getFullYear();
-    var monthNames = ["January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
+    var monthNames_en = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
 
-    return monthNames[date.getMonth()] + ", " + year;
+    var monthNames_ru = ["январь", "февраль", "март", "апрель", "май", "июнь",
+        "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь"];
+
+    if (lang =='ru'){
+        return monthNames_ru[date.getMonth()] + ", " + year
+    } else {
+        return monthNames_en[date.getMonth()] + ", " + year;
+    }
+}
+
+function getUserLanguage() {
+    var lang = navigator.language || navigator.systemLanguage;
+    return lang;
 }

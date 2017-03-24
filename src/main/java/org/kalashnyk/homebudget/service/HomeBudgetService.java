@@ -47,7 +47,7 @@ public interface HomeBudgetService {
 
     Map<Account.Type, Set<Account>> getAccountsGroupByType(long userId);
 
-    Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId);
+    Map<LocalDate, Set<Operation>> getOperationsForAccountGroupByDate(long userId, long accountId, LocalDate start, LocalDate end);
 
     OperationCategory getServiceCategory(String serviceCategory);
 
